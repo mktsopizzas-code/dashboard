@@ -14,6 +14,7 @@ export const ACCOUNTS = [
     type: 'pizza',
     color: '#E85D26',
     budget: 4000,
+    smallMarket: true,
     meta: {
       spend:       3047.02,
       impressions: 926297,
@@ -94,6 +95,7 @@ export const ACCOUNTS = [
     type: 'burger',
     color: '#1A252F',
     budget: 3000,
+    smallMarket: true,
     meta: {
       spend:       1670.66,
       impressions: 384186,

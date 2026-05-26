@@ -19,7 +19,11 @@ export default function Overview({ accounts }) {
 
   const alertIds = new Set(
     accounts
-      .filter((_, i) => metrics[i].cpr > avgCPR * 1.3 || metrics[i].ctr < avgCTR * 0.7)
+      .filter((acc, i) => {
+        const cprAlert = metrics[i].cpr > avgCPR * 1.3
+        const ctrAlert = metrics[i].ctr < avgCTR * 0.7
+        return acc.smallMarket ? cprAlert : cprAlert || ctrAlert
+      })
       .map(a => a.id)
   )
 
