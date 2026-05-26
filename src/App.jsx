@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { STYLES } from './styles.js'
 import { ACCOUNTS, CURRENT_DAY, DAYS_IN_MONTH } from './data.js'
 import Login from './Login.jsx'
+import AccountDetail from './pages/AccountDetail.jsx'
 import Overview from './pages/Overview.jsx'
 import Groups from './pages/Groups.jsx'
 import Creatives from './pages/Creatives.jsx'
@@ -19,8 +20,9 @@ const NAV = [
 ]
 
 export default function App() {
-  const [auth, setAuth] = useState(sessionStorage.getItem('to_auth') === '1')
-  const [page, setPage] = useState('overview')
+  const [auth, setAuth]                     = useState(sessionStorage.getItem('to_auth') === '1')
+  const [page, setPage]                     = useState('overview')
+  const [selectedAccount, setSelectedAccount] = useState(null)
 
   if (!auth) return (
     <>
@@ -32,7 +34,7 @@ export default function App() {
   const current = NAV.find(n => n.key === page)
 
   const pageComponent = {
-    overview:  <Overview  accounts={ACCOUNTS} />,
+    overview:  <Overview  accounts={ACCOUNTS} onSelectAccount={setSelectedAccount} />,
     groups:    <Groups    accounts={ACCOUNTS} />,
     creatives: <Creatives accounts={ACCOUNTS} />,
     budget:    <Budget    accounts={ACCOUNTS} />,
@@ -93,9 +95,10 @@ export default function App() {
               <span className="badge badge-warn">Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</span>
             </div>
           </header>
-          <div className="content">
-            {pageComponent}
-          </div>
+          {selectedAccount
+            ? <AccountDetail account={selectedAccount} onBack={() => setSelectedAccount(null)} />
+            : <div className="content">{pageComponent}</div>
+          }
         </div>
 
       </div>

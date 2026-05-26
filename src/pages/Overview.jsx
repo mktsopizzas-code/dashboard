@@ -1,6 +1,6 @@
 import { calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor } from '../utils.js'
 
-export default function Overview({ accounts }) {
+export default function Overview({ accounts, onSelectAccount }) {
   const metrics = accounts.map(calc)
 
   const totalSpend  = metrics.reduce((s, m) => s + m.spend,  0)
@@ -80,7 +80,11 @@ export default function Overview({ accounts }) {
           const googlePct = totalAccSpend > 0 ? (acc.google.spend / totalAccSpend) * 100 : 0
 
           return (
-            <div key={acc.id} className={`acc-card${isAlert ? ' alert' : ''}`}>
+            <div
+              key={acc.id}
+              className={`acc-card clickable${isAlert ? ' alert' : ''}`}
+              onClick={() => onSelectAccount(acc)}
+            >
               <div className="acc-header">
                 <div className="acc-header-left">
                   <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />

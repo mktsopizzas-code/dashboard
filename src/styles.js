@@ -979,4 +979,141 @@ a      { text-decoration: none; color: inherit; }
 .up  { color: #4ECB8D; }
 .down { color: #FF5A5A; }
 .neu  { color: #8A94A6; }
+
+/* ── Account Detail ───────────────────────────────────── */
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6A7284;
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 16px;
+  transition: color .15s;
+}
+.detail-back:hover { color: #C0C8D8; }
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.detail-header-name {
+  font-size: 20px;
+  font-weight: 500;
+  color: #E8EAF0;
+}
+.detail-header-type {
+  font-size: 13px;
+  color: #8A94A6;
+  margin-top: 2px;
+}
+.detail-header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #6A7284;
+}
+.kpi-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.detail-section {
+  background: #12151A;
+  border: 1px solid #1E2228;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.detail-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #4A5060;
+  margin-bottom: 16px;
+}
+.detail-funnel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.detail-funnel-row-label {
+  width: 82px;
+  font-size: 11px;
+  color: #6A7284;
+  text-align: right;
+  flex-shrink: 0;
+}
+.detail-funnel-bar {
+  height: 34px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  justify-content: space-between;
+  min-width: 60px;
+  transition: width .3s;
+}
+.detail-funnel-bar.pending {
+  border: 2px dashed #2A2F3A;
+  background: transparent !important;
+}
+.detail-funnel-bar.bottleneck {
+  outline: 1px solid #FF5A5A;
+}
+.detail-funnel-bar-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+}
+.detail-funnel-bar-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,.85);
+  white-space: nowrap;
+}
+.detail-funnel-bar.pending .detail-funnel-bar-name,
+.detail-funnel-bar.pending .detail-funnel-bar-val { color: #4A5060; }
+.detail-funnel-rate {
+  width: 56px;
+  text-align: right;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.detail-funnel-connector {
+  height: 10px;
+  margin-left: 92px;
+  border-left: 1px solid #1E2228;
+  margin-bottom: 0;
+}
+.detail-campaigns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.detail-campaigns-table th {
+  text-align: left;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #4A5060;
+  padding: 0 8px 10px 0;
+  border-bottom: 1px solid #1E2228;
+}
+.detail-campaigns-table td {
+  padding: 9px 8px 9px 0;
+  border-bottom: 1px solid #1E2228;
+  color: #C0C8D8;
+  vertical-align: middle;
+}
+.acc-card.clickable { cursor: pointer; }
 `

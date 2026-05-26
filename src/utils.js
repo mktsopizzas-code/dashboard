@@ -114,6 +114,37 @@ export function platformSplit(acc) {
   return { metaPct, googlePct, metaCTR, googleCTR, metaROAS, googleROAS }
 }
 
+export function detailFunnelStages(acc) {
+  const pageViews = (acc.meta.pageViews  || 0) + (acc.google.pageViews  || 0)
+  const addToCart = (acc.meta.addToCart  || 0) + (acc.google.addToCart  || 0)
+  return [
+    { label: 'Impressões',  value: acc.meta.impressions + acc.google.impressions, pending: false },
+    { label: 'Cliques',     value: acc.meta.clicks      + acc.google.clicks,      pending: false },
+    { label: 'Page Views',  value: pageViews,                                     pending: false },
+    { label: 'Add to Cart', value: addToCart,                                     pending: addToCart === 0 },
+    { label: 'Compras',     value: acc.meta.conversions + acc.google.conversions, pending: false },
+  ]
+}
+
+export function detailFunnelRates(stages) {
+  return stages.map((stage, i) => {
+    if (i === 0) return null
+    if (stage.pending || stages[i - 1].pending || stages[i - 1].value === 0) return null
+    return (stage.value / stages[i - 1].value) * 100
+  })
+}
+
+export function detailFunnelBottleneck(stages) {
+  let minRate = Infinity
+  let idx = -1
+  for (let i = 1; i < stages.length; i++) {
+    if (stages[i].pending || stages[i - 1].pending || stages[i - 1].value === 0) continue
+    const rate = (stages[i].value / stages[i - 1].value) * 100
+    if (rate < minRate) { minRate = rate; idx = i }
+  }
+  return idx
+}
+
 export function pacingStatus(spend, budget, currentDay, daysInMonth) {
   const projection = (spend / currentDay) * daysInMonth
   const pct = (spend / budget) * 100

@@ -21,12 +21,16 @@ export const ACCOUNTS = [
       clicks:      5033,
       conversions: 3470,
       revenue:     247293.44,
-      leads:       2600,   // estimado (75% dos cliques)
+      leads:       2600,
       orders:      3470,
+      pageViews:   3308,
+      addToCart:   0,
+      checkout:    0,
     },
     google: {
       spend: 0, impressions: 0, clicks: 0,
       conversions: 0, revenue: 0, leads: 0, orders: 0,
+      pageViews: 0, addToCart: 0, checkout: 0,
     },
   },
   {
@@ -41,12 +45,16 @@ export const ACCOUNTS = [
       clicks:      21106,
       conversions: 2138,
       revenue:     160594.05,
-      leads:       15830,  // estimado (75% dos cliques)
+      leads:       15830,
       orders:      2138,
+      pageViews:   4580,
+      addToCart:   0,
+      checkout:    0,
     },
     google: {
       spend: 0, impressions: 0, clicks: 0,
       conversions: 0, revenue: 0, leads: 0, orders: 0,
+      pageViews: 0, addToCart: 0, checkout: 0,
     },
   },
   {
@@ -61,12 +69,16 @@ export const ACCOUNTS = [
       clicks:      28312,
       conversions: 954,
       revenue:     45710.43,
-      leads:       21234,  // estimado (75% dos cliques)
+      leads:       21234,
       orders:      954,
+      pageViews:   5589,
+      addToCart:   0,
+      checkout:    0,
     },
     google: {
       spend: 0, impressions: 0, clicks: 0,
       conversions: 0, revenue: 0, leads: 0, orders: 0,
+      pageViews: 0, addToCart: 0, checkout: 0,
     },
   },
   {
@@ -81,12 +93,16 @@ export const ACCOUNTS = [
       clicks:      5014,
       conversions: 245,
       revenue:     17518.45,
-      leads:       3761,   // estimado (75% dos cliques)
+      leads:       3761,
       orders:      245,
+      pageViews:   1206,
+      addToCart:   0,
+      checkout:    0,
     },
     google: {
       spend: 0, impressions: 0, clicks: 0,
       conversions: 0, revenue: 0, leads: 0, orders: 0,
+      pageViews: 0, addToCart: 0, checkout: 0,
     },
   },
   {
@@ -102,12 +118,16 @@ export const ACCOUNTS = [
       clicks:      4356,
       conversions: 487,
       revenue:     33280.18,
-      leads:       3267,   // estimado (75% dos cliques)
+      leads:       3267,
       orders:      487,
+      pageViews:   1257,
+      addToCart:   0,
+      checkout:    0,
     },
     google: {
       spend: 0, impressions: 0, clicks: 0,
       conversions: 0, revenue: 0, leads: 0, orders: 0,
+      pageViews: 0, addToCart: 0, checkout: 0,
     },
   },
 ]
