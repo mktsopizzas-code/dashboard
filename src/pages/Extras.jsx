@@ -8,8 +8,9 @@ const TABS = ['Pico por Horário', 'Meta vs Google', 'UTMs']
 function TabHourly() {
   const maxVal = Math.max(...HOURLY.flatMap(h => [h.pizza, h.burger]))
 
-  const noturno  = HOURLY.filter(h => h.hour >= 19 && h.hour <= 22)
-  const ocioso   = HOURLY.filter(h => h.hour >= 15 && h.hour <= 17)
+  const hr = h => parseInt(h.hour)
+  const noturno  = HOURLY.filter(h => hr(h) >= 19 && hr(h) <= 22)
+  const ocioso   = HOURLY.filter(h => hr(h) >= 15 && hr(h) <= 17)
   const melhor   = HOURLY.reduce((best, h) =>
     (h.pizza + h.burger) > (best.pizza + best.burger) ? h : best, HOURLY[0])
 
@@ -48,7 +49,7 @@ function TabHourly() {
                 }}
               />
             </div>
-            <div className="h-label">{h.hour}h</div>
+            <div className="h-label">{h.hour}</div>
           </div>
         ))}
       </div>
@@ -61,7 +62,7 @@ function TabHourly() {
         </div>
         <div className="hour-highlight-card">
           <div className="hour-highlight-label">Melhor Horário</div>
-          <div className="hour-highlight-val">{melhor.hour}h</div>
+          <div className="hour-highlight-val">{melhor.hour}</div>
           <div className="hour-highlight-sub">{melhor.pizza + melhor.burger} conversões</div>
         </div>
         <div className="hour-highlight-card">
@@ -187,8 +188,8 @@ function TabUTMs() {
             <tr key={i}>
               <td>{row.campaign}</td>
               <td>
-                <span className={`tag tag-${row.source}`}>
-                  {row.source === 'meta' ? 'Meta' : 'Google'}
+                <span className={`tag tag-${row.source === 'google' ? 'google' : 'meta'}`}>
+                  {row.source === 'google' ? 'Google' : 'Meta'}
                 </span>
               </td>
               <td className="mono">{row.clicks.toLocaleString('pt-BR')}</td>

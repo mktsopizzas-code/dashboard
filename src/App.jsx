@@ -77,7 +77,7 @@ export default function App() {
           </div>
 
           <div className="sb-footer">
-            <div>Maio 2025 · Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</div>
+            <div>Maio 2026 · Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</div>
             <div>Meta + Google Ads</div>
           </div>
         </aside>
@@ -89,7 +89,7 @@ export default function App() {
               <p>{current.sub}</p>
             </div>
             <div className="topbar-right">
-              <span className="badge badge-ok">6 contas ativas</span>
+              <span className="badge badge-ok">{ACCOUNTS.length} contas ativas</span>
               <span className="badge badge-warn">Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</span>
             </div>
           </header>

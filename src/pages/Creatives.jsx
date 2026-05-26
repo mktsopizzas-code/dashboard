@@ -32,8 +32,8 @@ export default function Creatives() {
               </div>
 
               <div style={{ marginBottom: 10 }}>
-                <span className={`tag tag-${cr.platform === 'meta' ? 'meta' : 'google'}`}>
-                  {cr.platform === 'meta' ? 'Meta' : 'Google'}
+                <span className={`tag tag-${cr.platform.toLowerCase() === 'google' ? 'google' : 'meta'}`}>
+                  {cr.platform.toLowerCase() === 'google' ? 'Google' : 'Meta'}
                 </span>
               </div>
 
