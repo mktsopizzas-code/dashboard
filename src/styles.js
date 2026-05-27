@@ -1118,42 +1118,48 @@ a      { text-decoration: none; color: inherit; }
 .acc-card.clickable { cursor: pointer; }
 
 /* ── Account Detail — Vertical Trapezoid Funnel ──────── */
-.detail-funnel-v { max-width: 520px; margin: 0 auto; }
-.detail-funnel-v-connector {
-  height: 24px;
+.detail-funnel-v-row {
+  display: flex;
+  align-items: flex-start;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.detail-funnel-v-left {
+  width: 70px;
+  flex-shrink: 0;
+  height: 64px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.detail-funnel-v-line {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  height: 100%;
-  border-radius: 1px;
-}
-.detail-funnel-v-cost {
-  position: absolute;
-  left: 0;
+  justify-content: flex-end;
+  padding-right: 12px;
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: #6A7284;
+  font-size: 11px;
+  color: #8A94A6;
 }
-.detail-funnel-v-rate {
-  position: absolute;
-  right: 0;
+.detail-funnel-v-center {
+  width: 560px;
+  flex-shrink: 0;
+}
+.detail-funnel-v-right {
+  width: 70px;
+  flex-shrink: 0;
+  height: 64px;
+  display: flex;
+  align-items: flex-start;
+  padding-left: 12px;
+  padding-top: 4px;
   font-family: 'Space Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 700;
 }
 .detail-funnel-neck {
-  margin-top: 16px;
+  max-width: 700px;
+  margin: 16px auto 0;
   background: #1F0A0A;
   border: 1px solid #3A1010;
   border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
   color: #FF7A7A;
   display: flex;
   gap: 8px;

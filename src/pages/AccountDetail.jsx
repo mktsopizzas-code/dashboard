@@ -1,7 +1,7 @@
 import { CREATIVES, CURRENT_DAY, DAYS_IN_MONTH } from '../data.js'
 import {
   calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor,
-  pacingStatus, platformSplit, funnelColor,
+  pacingStatus, platformSplit, detailFunnelRateColor,
   detailFunnelStages, detailFunnelRates, detailFunnelBottleneck, detailFunnelCosts,
 } from '../utils.js'
 
@@ -16,9 +16,15 @@ export default function AccountDetail({ account, onBack }) {
   const neckIdx = detailFunnelBottleneck(stages)
   const costs   = detailFunnelCosts(account)
 
-  const FUNNEL_L    = [0, 117, 143, 182, 208]
-  const FUNNEL_R    = [520, 403, 377, 338, 312]
-  const FUNNEL_OPAC = [0.9, 0.8, 0.7, 0.5, 0.6]
+  const FUNNEL_LT     = [0,   79,  154, 202]
+  const FUNNEL_LB     = [79,  154, 202, 202]
+  const FUNNEL_RT     = [560, 481, 406, 358]
+  const FUNNEL_RB     = [481, 406, 358, 358]
+  const FUNNEL_TOP_OP = [1.00, 0.88, 0.76, 0.64]
+  const FUNNEL_BOT_OP = [0.88, 0.76, 0.64, 0.52]
+
+  const validRates = rates.filter(r => r !== null)
+  const showNeck   = neckIdx !== -1 && validRates.length >= 2
 
   const campaigns = [...CREATIVES]
     .filter(c => c.accountId === account.id)
@@ -87,77 +93,62 @@ export default function AccountDetail({ account, onBack }) {
       {/* Seção 3 — Funil visual */}
       <div className="detail-section">
         <div className="detail-section-title">Funil de Conversão</div>
-        <div className="detail-funnel-v">
-          {stages.map((stage, i) => {
-            const lT     = FUNNEL_L[i], rT = FUNNEL_R[i]
-            const lB     = i < 4 ? FUNNEL_L[i + 1] : FUNNEL_L[i]
-            const rB     = i < 4 ? FUNNEL_R[i + 1] : FUNNEL_R[i]
-            const rate   = rates[i]
-            const cost   = costs[i]
-            const isNeck = i === neckIdx
-            const midX   = (lT + rT) / 2
-            const clipId = `fc-${account.id}-${i}`
-            return (
-              <div key={stage.label}>
-                {i > 0 && (
-                  <div className="detail-funnel-v-connector">
-                    <span className="detail-funnel-v-cost">
-                      {cost != null ? fmtBRL(cost) : ''}
-                    </span>
-                    <div
-                      className="detail-funnel-v-line"
-                      style={{ background: account.color, opacity: 0.4 }}
-                    />
-                    <span
-                      className="detail-funnel-v-rate"
-                      style={{ color: rate != null ? funnelColor(rate) : '#3A4050' }}
-                    >
-                      {rate != null ? rate.toFixed(1) + '%' : '—'}
-                    </span>
-                  </div>
-                )}
-                <svg viewBox="0 0 520 52" style={{ display: 'block', width: '100%' }}>
+
+        {stages.map((stage, i) => {
+          const lT    = FUNNEL_LT[i], rT = FUNNEL_RT[i]
+          const lB    = FUNNEL_LB[i], rB = FUNNEL_RB[i]
+          const rate  = rates[i]
+          const cost  = costs[i]
+          const midX  = 280
+          const textLX = Math.round((lT + lB) / 2) + 16
+          const textRX = Math.round((rT + rB) / 2) - 16
+          const gId   = `fg-${account.id}-${i}`
+          const cId   = `fc-${account.id}-${i}`
+          return (
+            <div key={stage.label} className="detail-funnel-v-row">
+              <div className="detail-funnel-v-left">
+                {!stage.pending && cost != null ? fmtBRL(cost) : ''}
+              </div>
+              <div className="detail-funnel-v-center">
+                <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
                   <defs>
-                    <clipPath id={clipId}>
-                      <polygon points={`${lT},0 ${rT},0 ${rB},52 ${lB},52`} />
+                    {!stage.pending && (
+                      <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%"   stopColor={account.color} stopOpacity={FUNNEL_TOP_OP[i]} />
+                        <stop offset="100%" stopColor={account.color} stopOpacity={FUNNEL_BOT_OP[i]} />
+                      </linearGradient>
+                    )}
+                    <clipPath id={cId}>
+                      <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
                     </clipPath>
                   </defs>
                   <polygon
-                    points={`${lT},0 ${rT},0 ${rB},52 ${lB},52`}
-                    fill={stage.pending ? 'none' : account.color}
-                    fillOpacity={stage.pending ? 0 : FUNNEL_OPAC[i]}
-                    stroke={stage.pending ? '#2A2F3A' : 'none'}
-                    strokeWidth={stage.pending ? 1.5 : 0}
+                    points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
+                    fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
+                    stroke={stage.pending ? '#3A4050' : 'none'}
+                    strokeWidth={stage.pending ? 1 : 0}
                     strokeDasharray={stage.pending ? '6 4' : undefined}
                   />
-                  {isNeck && (
-                    <polygon
-                      points={`${lT},0 ${rT},0 ${rB},52 ${lB},52`}
-                      fill="none"
-                      stroke="#FF5A5A"
-                      strokeWidth="2"
-                    />
-                  )}
-                  <g clipPath={`url(#${clipId})`}>
+                  <g clipPath={`url(#${cId})`}>
                     {stage.pending ? (
                       <>
-                        <text x={midX} y={18} fontSize="11" fontFamily="DM Sans, sans-serif"
-                          fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                        <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
+                          fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
                           {stage.label}
                         </text>
-                        <text x={midX} y={36} fontSize="10" fontFamily="DM Sans, sans-serif"
-                          fill="#3A4050" textAnchor="middle" dominantBaseline="middle">
+                        <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
+                          fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
                           dados em breve
                         </text>
                       </>
                     ) : (
                       <>
-                        <text x={lT + 14} y={26} fontSize="12" fontFamily="DM Sans, sans-serif"
-                          fill="rgba(255,255,255,0.9)" dominantBaseline="middle">
+                        <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
+                          fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
                           {stage.label}
                         </text>
-                        <text x={rT - 14} y={26} fontSize="12" fontFamily="Space Mono, monospace"
-                          fill="rgba(255,255,255,0.85)" textAnchor="end" dominantBaseline="middle">
+                        <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
+                          fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
                           {fmtN(stage.value)}
                         </text>
                       </>
@@ -165,18 +156,25 @@ export default function AccountDetail({ account, onBack }) {
                   </g>
                 </svg>
               </div>
-            )
-          })}
-          {neckIdx !== -1 && (
-            <div className="detail-funnel-neck">
-              <span>⚠</span>
-              <span>
-                Gargalo em <strong>{stages[neckIdx].label}</strong>
-                {rates[neckIdx] != null && ` — ${rates[neckIdx].toFixed(1)}% de conversão`}
-              </span>
+              <div
+                className="detail-funnel-v-right"
+                style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
+              >
+                {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
+              </div>
             </div>
-          )}
-        </div>
+          )
+        })}
+
+        {showNeck && (
+          <div className="detail-funnel-neck">
+            <span>⚠</span>
+            <span>
+              Gargalo em <strong>{stages[neckIdx].label}</strong>
+              {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Seção 4 — Tabela de campanhas */}

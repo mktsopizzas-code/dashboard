@@ -115,14 +115,12 @@ export function platformSplit(acc) {
 }
 
 export function detailFunnelStages(acc) {
-  const pageViews = (acc.meta.pageViews  || 0) + (acc.google.pageViews  || 0)
-  const addToCart = (acc.meta.addToCart  || 0) + (acc.google.addToCart  || 0)
+  const addToCart = (acc.meta.addToCart || 0) + (acc.google.addToCart || 0)
   return [
-    { label: 'Impressões',  value: acc.meta.impressions + acc.google.impressions, pending: false },
-    { label: 'Cliques',     value: acc.meta.clicks      + acc.google.clicks,      pending: false },
-    { label: 'Page Views',  value: pageViews,                                     pending: false },
-    { label: 'Add to Cart', value: addToCart,                                     pending: addToCart === 0 },
-    { label: 'Compras',     value: acc.meta.conversions + acc.google.conversions, pending: false },
+    { label: 'Cliques no Link', value: acc.meta.clicks + acc.google.clicks,                     pending: false },
+    { label: 'Page Views',      value: (acc.meta.pageViews || 0) + (acc.google.pageViews || 0), pending: false },
+    { label: 'Add to Cart',     value: addToCart,                                                pending: addToCart === 0 },
+    { label: 'Compras',         value: acc.meta.conversions + acc.google.conversions,            pending: false },
   ]
 }
 
@@ -152,12 +150,17 @@ export function detailFunnelCosts(acc) {
   const addToCart = (acc.meta.addToCart || 0) + (acc.google.addToCart || 0)
   const conv      = acc.meta.conversions + acc.google.conversions
   return [
-    null,
     clicks    > 0 ? spend / clicks    : null,
     pageViews > 0 ? spend / pageViews : null,
     addToCart > 0 ? spend / addToCart : null,
     conv      > 0 ? spend / conv      : null,
   ]
+}
+
+export function detailFunnelRateColor(v) {
+  if (v >= 50) return '#4ECB8D'
+  if (v >= 20) return '#FF8C42'
+  return '#FF5A5A'
 }
 
 export function pacingStatus(spend, budget, currentDay, daysInMonth) {
