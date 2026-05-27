@@ -1116,4 +1116,47 @@ a      { text-decoration: none; color: inherit; }
   vertical-align: middle;
 }
 .acc-card.clickable { cursor: pointer; }
+
+/* ── Account Detail — Vertical Trapezoid Funnel ──────── */
+.detail-funnel-v { max-width: 520px; margin: 0 auto; }
+.detail-funnel-v-connector {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.detail-funnel-v-line {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+}
+.detail-funnel-v-cost {
+  position: absolute;
+  left: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #6A7284;
+}
+.detail-funnel-v-rate {
+  position: absolute;
+  right: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+}
+.detail-funnel-neck {
+  margin-top: 16px;
+  background: #1F0A0A;
+  border: 1px solid #3A1010;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #FF7A7A;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
 `

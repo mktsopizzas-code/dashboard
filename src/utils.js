@@ -145,6 +145,21 @@ export function detailFunnelBottleneck(stages) {
   return idx
 }
 
+export function detailFunnelCosts(acc) {
+  const spend     = acc.meta.spend + acc.google.spend
+  const clicks    = acc.meta.clicks + acc.google.clicks
+  const pageViews = (acc.meta.pageViews || 0) + (acc.google.pageViews || 0)
+  const addToCart = (acc.meta.addToCart || 0) + (acc.google.addToCart || 0)
+  const conv      = acc.meta.conversions + acc.google.conversions
+  return [
+    null,
+    clicks    > 0 ? spend / clicks    : null,
+    pageViews > 0 ? spend / pageViews : null,
+    addToCart > 0 ? spend / addToCart : null,
+    conv      > 0 ? spend / conv      : null,
+  ]
+}
+
 export function pacingStatus(spend, budget, currentDay, daysInMonth) {
   const projection = (spend / currentDay) * daysInMonth
   const pct = (spend / budget) * 100
