@@ -6,6 +6,7 @@
 
 export const DAYS_IN_MONTH = 31
 export const CURRENT_DAY   = 25
+export const CPR_TARGET    = 3.00
 
 export const ACCOUNTS = [
   {

@@ -1,4 +1,5 @@
-import { calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor } from '../utils.js'
+import { calc, fmtBRL, fmtN, ctrColor, roasColor, cprStatus } from '../utils.js'
+import { CPR_TARGET } from '../data.js'
 
 function groupStats(accounts) {
   const metrics = accounts.map(calc)
@@ -20,6 +21,7 @@ function groupStats(accounts) {
 
 function GroupBlock({ emoji, title, accounts }) {
   const { metrics, totalSpend, avgCTR, avgCPC, avgCPR, avgROAS } = groupStats(accounts)
+  const inTargetCount = metrics.filter(m => m.cpr <= CPR_TARGET).length
 
   return (
     <div className="group-block">
@@ -42,7 +44,12 @@ function GroupBlock({ emoji, title, accounts }) {
         </div>
         <div className="bench-item">
           <div className="bench-label">CPR Médio</div>
-          <div className="bench-avg" style={{ color: cprColor(avgCPR) }}>{fmtBRL(avgCPR)}</div>
+          <div className="bench-avg" style={{ color: cprStatus(avgCPR).color }}>{fmtBRL(avgCPR)}</div>
+          <div style={{ fontSize: 11, marginTop: 4, color: inTargetCount > 0 ? '#4ECB8D' : '#FF5A5A' }}>
+            {inTargetCount > 0
+              ? `${inTargetCount} conta${inTargetCount > 1 ? 's' : ''} dentro da meta`
+              : 'Nenhuma conta dentro da meta'}
+          </div>
         </div>
         <div className="bench-item">
           <div className="bench-label">ROAS Médio</div>

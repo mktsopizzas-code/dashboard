@@ -1165,4 +1165,50 @@ a      { text-decoration: none; color: inherit; }
   gap: 8px;
   align-items: center;
 }
+
+/* ── CPR Target ───────────────────────────────────────── */
+.cpr-progress-track {
+  margin-top: 8px;
+  height: 4px;
+  background: #1E2228;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.cpr-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.cpr-target-card {
+  max-width: 700px;
+  margin: 12px auto 0;
+  background: #0A1F15;
+  border: 1px solid #103020;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cpr-target-card-main {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: #E8EAF0;
+}
+.cpr-target-card-sub {
+  font-size: 11px;
+  color: #6A7284;
+  margin-top: 3px;
+}
+.badge-meta-ok {
+  font-size: 9px;
+  background: #0A1F15;
+  color: #4ECB8D;
+  border: 1px solid #103020;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
 `

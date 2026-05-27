@@ -1,6 +1,6 @@
-import { CREATIVES, CURRENT_DAY, DAYS_IN_MONTH } from '../data.js'
+import { CREATIVES, CURRENT_DAY, DAYS_IN_MONTH, CPR_TARGET } from '../data.js'
 import {
-  calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor,
+  calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor, cprStatus,
   pacingStatus, platformSplit, detailFunnelRateColor,
   detailFunnelStages, detailFunnelRates, detailFunnelBottleneck, detailFunnelCosts,
 } from '../utils.js'
@@ -25,6 +25,9 @@ export default function AccountDetail({ account, onBack }) {
 
   const validRates = rates.filter(r => r !== null)
   const showNeck   = neckIdx !== -1 && validRates.length >= 2
+
+  const cprSt  = cprStatus(m.cpr)
+  const barPct = Math.min((m.cpr / CPR_TARGET) * 100, 100)
 
   const campaigns = [...CREATIVES]
     .filter(c => c.accountId === account.id)
@@ -64,10 +67,16 @@ export default function AccountDetail({ account, onBack }) {
         </div>
         <div className="kpi-card">
           <div className="kpi-label">CPR</div>
-          <div className="kpi-val" style={{ fontSize: 16, color: cprColor(m.cpr) }}>
+          <div className="kpi-val" style={{ fontSize: 16, color: cprSt.color }}>
             {fmtBRL(m.cpr)}
           </div>
-          <div className="kpi-trend">por conversão</div>
+          <div className="cpr-progress-track">
+            <div className="cpr-progress-fill" style={{ width: `${barPct}%`, background: cprSt.color }} />
+          </div>
+          <div className="kpi-trend" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ color: cprSt.color }}>{cprSt.icon} {cprSt.label}</span>
+            <span>Meta: {fmtBRL(CPR_TARGET)}</span>
+          </div>
         </div>
         <div className="kpi-card">
           <div className="kpi-label">ROAS</div>
@@ -175,6 +184,22 @@ export default function AccountDetail({ account, onBack }) {
             </span>
           </div>
         )}
+
+        <div className="cpr-target-card">
+          <div>
+            <div className="cpr-target-card-main">
+              CPR Atual: {fmtBRL(m.cpr)} → Meta: {fmtBRL(CPR_TARGET)}
+            </div>
+            <div className="cpr-target-card-sub" style={{ color: m.cpr <= CPR_TARGET ? '#4ECB8D' : '#6A7284' }}>
+              {m.cpr <= CPR_TARGET
+                ? 'Meta atingida este mês 🎯'
+                : `Reduzir ${fmtBRL(m.cpr - CPR_TARGET)} por compra`}
+            </div>
+          </div>
+          <span className={`badge ${m.cpr <= CPR_TARGET ? 'badge-ok' : 'badge-err'}`}>
+            {cprSt.icon} {cprSt.label}
+          </span>
+        </div>
       </div>
 
       {/* Seção 4 — Tabela de campanhas */}

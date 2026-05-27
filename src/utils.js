@@ -35,6 +35,12 @@ export function cprColor(v) {
   return '#FF5A5A'
 }
 
+export function cprStatus(cpr) {
+  if (cpr <= 3.00) return { color: '#4ECB8D', label: 'Meta atingida',   icon: '✓' }
+  if (cpr <= 3.90) return { color: '#FF8C42', label: 'Próximo da meta', icon: '~' }
+  return                   { color: '#FF5A5A', label: 'Acima da meta',  icon: '✗' }
+}
+
 export function roasColor(v) {
   if (v >= 4) return '#4ECB8D'
   if (v >= 2) return '#FF8C42'

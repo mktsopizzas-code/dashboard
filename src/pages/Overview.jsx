@@ -1,4 +1,5 @@
-import { calc, fmtBRL, fmtN, ctrColor, cprColor, roasColor } from '../utils.js'
+import { calc, fmtBRL, fmtN, ctrColor, roasColor, cprStatus } from '../utils.js'
+import { CPR_TARGET } from '../data.js'
 
 export default function Overview({ accounts, onSelectAccount }) {
   const metrics = accounts.map(calc)
@@ -44,9 +45,13 @@ export default function Overview({ accounts, onSelectAccount }) {
           <div className="kpi-trend">{fmtN(totalClicks)} cliques</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-label">CPC Médio</div>
-          <div className="kpi-val">{fmtBRL(consolidatedCPC)}</div>
-          <div className="kpi-trend">por clique</div>
+          <div className="kpi-label">CPR Médio</div>
+          <div className="kpi-val" style={{ color: cprStatus(consolidatedCPR).color }}>
+            {fmtBRL(consolidatedCPR)}
+          </div>
+          <div className="kpi-trend" style={{ color: cprStatus(consolidatedCPR).color }}>
+            Meta: {fmtBRL(CPR_TARGET)}
+          </div>
         </div>
         <div className="kpi-card">
           <div className="kpi-label">ROAS Médio</div>
@@ -109,8 +114,11 @@ export default function Overview({ accounts, onSelectAccount }) {
                 </div>
                 <div className="acc-metric">
                   <div className="acc-metric-label">CPR</div>
-                  <div className="acc-metric-val" style={{ color: cprColor(m.cpr) }}>
-                    {fmtBRL(m.cpr)}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span className="acc-metric-val" style={{ color: cprStatus(m.cpr).color }}>
+                      {fmtBRL(m.cpr)}
+                    </span>
+                    {m.cpr <= CPR_TARGET && <span className="badge-meta-ok">✓ Meta</span>}
                   </div>
                 </div>
                 <div className="acc-metric">
