@@ -1,15 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { ACCOUNTS } from '../data.js'
 
-function getDateRange() {
-  const now = new Date()
-  const y   = now.getFullYear()
-  const m   = String(now.getMonth() + 1).padStart(2, '0')
-  const d   = String(now.getDate()).padStart(2, '0')
-  return { since: `${y}-${m}-01`, until: `${y}-${m}-${d}` }
-}
-
-export function useAccounts() {
+export function useAccounts(since, until) {
   const isDev = import.meta.env.DEV
 
   const [accounts,    setAccounts]    = useState(isDev ? ACCOUNTS : [])
@@ -21,7 +13,6 @@ export function useAccounts() {
     if (isDev) return
     setLoading(true)
     setError(null)
-    const { since, until } = getDateRange()
     try {
       const res  = await fetch(`/api/accounts?since=${since}&until=${until}`)
       const data = await res.json()
@@ -30,11 +21,10 @@ export function useAccounts() {
       setLastUpdated(new Date())
     } catch (err) {
       setError(err.message)
-      // mantém dados anteriores — não limpa accounts
     } finally {
       setLoading(false)
     }
-  }, [isDev])
+  }, [isDev, since, until])
 
   useEffect(() => { load() }, [load])
 

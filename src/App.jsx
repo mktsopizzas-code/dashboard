@@ -20,11 +20,37 @@ const NAV = [
   { key: 'funnel',    icon: '◆', label: 'Funil',         title: 'Funil',          sub: 'Análise do funil de conversão' },
 ]
 
+function isoToday() {
+  return new Date().toISOString().split('T')[0]
+}
+function isoFirstOfMonth() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+}
+
 export default function App() {
   const [auth, setAuth]                       = useState(sessionStorage.getItem('to_auth') === '1')
   const [page, setPage]                       = useState('overview')
   const [selectedAccount, setSelectedAccount] = useState(null)
-  const { accounts, loading, error, lastUpdated, refresh } = useAccounts()
+
+  const [since, setSince] = useState(isoFirstOfMonth)
+  const [until, setUntil] = useState(isoToday)
+  const [draftSince, setDraftSince] = useState(isoFirstOfMonth)
+  const [draftUntil, setDraftUntil] = useState(isoToday)
+
+  const { accounts, loading, error, lastUpdated, refresh } = useAccounts(since, until)
+
+  const applyDates = () => {
+    setSince(draftSince)
+    setUntil(draftUntil)
+  }
+
+  const setShortcut = (s, u) => {
+    setDraftSince(s)
+    setDraftUntil(u)
+    setSince(s)
+    setUntil(u)
+  }
 
   if (!auth) return (
     <>
@@ -126,6 +152,43 @@ export default function App() {
               <p>{current.sub}</p>
             </div>
             <div className="topbar-right">
+              <div className="date-filter">
+                <span className="date-shortcut" onClick={() => setShortcut(isoToday(), isoToday())}>Hoje</span>
+                <span className="date-shortcut" onClick={() => {
+                  const t = new Date()
+                  const u = t.toISOString().split('T')[0]
+                  t.setDate(t.getDate() - 7)
+                  setShortcut(t.toISOString().split('T')[0], u)
+                }}>7 dias</span>
+                <span className="date-shortcut" onClick={() => setShortcut(isoFirstOfMonth(), isoToday())}>Este mês</span>
+                <span className="date-shortcut" onClick={() => {
+                  const t = new Date()
+                  t.setDate(1)
+                  t.setMonth(t.getMonth() - 1)
+                  const s = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-01`
+                  const last = new Date(t.getFullYear(), t.getMonth() + 1, 0)
+                  setShortcut(s, last.toISOString().split('T')[0])
+                }}>Mês passado</span>
+
+                <span style={{ color: '#4A5060', fontSize: 11 }}>De:</span>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={draftSince}
+                  onChange={e => setDraftSince(e.target.value)}
+                />
+                <span style={{ color: '#4A5060', fontSize: 11 }}>Até:</span>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={draftUntil}
+                  onChange={e => setDraftUntil(e.target.value)}
+                />
+                <button className="date-shortcut" style={{ color: '#E8EAF0', borderColor: '#4A5060' }} onClick={applyDates}>
+                  Aplicar
+                </button>
+              </div>
+
               <button
                 onClick={refresh}
                 style={{ background: 'none', border: '1px solid #2A2F3A', color: '#6A7284', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: 13 }}

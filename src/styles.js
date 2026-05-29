@@ -1245,4 +1245,35 @@ a      { text-decoration: none; color: inherit; }
   color: #E8EAF0;
   border-color: #4A5060;
 }
+
+/* ── Date filter ──────────────────────────────────────── */
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.date-input {
+  background: #0A0C0F;
+  border: 1px solid #2A2F3A;
+  color: #E8EAF0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color-scheme: dark;
+}
+.date-shortcut {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #4A5060;
+  background: #14171C;
+  border: 1px solid #1E2228;
+  transition: color .15s;
+  white-space: nowrap;
+}
+.date-shortcut:hover {
+  color: #E8EAF0;
+}
 `
