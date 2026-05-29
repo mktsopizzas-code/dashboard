@@ -6,6 +6,14 @@ export default async function handler(req, res) {
   const { accountId, since, until } = req.query
   const token = process.env.META_TOKEN
 
+  console.log('META API CALL:', {
+    accountId,
+    since,
+    until,
+    hasToken: !!token,
+    tokenPrefix: token?.substring(0, 20),
+  })
+
   const fields = [
     'spend', 'impressions', 'clicks',
     'actions', 'action_values',
@@ -21,8 +29,15 @@ export default async function handler(req, res) {
     const response = await fetch(url)
     const json     = await response.json()
 
+    console.log('META API RESPONSE:', JSON.stringify(json, null, 2))
+
     if (json.error) {
-      return res.status(400).json({ error: json.error.message })
+      return res.status(400).json({
+        error: json.error.message,
+        code:  json.error.code,
+        type:  json.error.type,
+        full:  json.error,
+      })
     }
 
     const d = json.data?.[0]
@@ -71,14 +86,15 @@ export default async function handler(req, res) {
       checkout: getAction('initiate_checkout') || getAction('omni_initiated_checkout') || 0,
       leads:    getAction('lead') || 0,
       _debug: {
-        raw_spend:      d.spend,
+        raw_spend:       d.spend,
         raw_impressions: d.impressions,
-        raw_clicks:     d.clicks,
-        actions:        d.actions        || [],
-        action_values:  d.action_values  || [],
+        raw_clicks:      d.clicks,
+        actions:         d.actions       || [],
+        action_values:   d.action_values || [],
       },
     })
   } catch (err) {
+    console.log('META API ERROR:', err.message)
     return res.status(500).json({ error: err.message })
   }
 }

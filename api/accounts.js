@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 
         if (!meta || meta.error) {
           console.error(`[accounts] conta ${i} (${id}) retornou erro:`, meta?.error || 'null')
-          return EMPTY_META
+          return { ...EMPTY_META, _error: meta?.error || 'null response' }
         }
 
         return meta
