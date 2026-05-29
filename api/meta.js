@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   })
 
   const fields = [
-    'spend', 'impressions', 'clicks',
+    'spend', 'impressions', 'clicks', 'inline_link_clicks',
     'actions', 'action_values',
   ].join(',')
 
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       spend:       parseFloat(d.spend || 0),
       impressions: parseInt(d.impressions || 0),
-      clicks:      parseInt(d.clicks || 0),
+      clicks:      parseInt(d.inline_link_clicks || 0),
       conversions,
       revenue,
       pageViews,
