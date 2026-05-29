@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { STYLES } from './styles.js'
-import { ACCOUNTS, CURRENT_DAY, DAYS_IN_MONTH } from './data.js'
+import { CURRENT_DAY, DAYS_IN_MONTH } from './data.js'
+import { useAccounts } from './hooks/useAccounts.js'
 import Login from './Login.jsx'
 import AccountDetail from './pages/AccountDetail.jsx'
 import Overview from './pages/Overview.jsx'
@@ -20,9 +21,10 @@ const NAV = [
 ]
 
 export default function App() {
-  const [auth, setAuth]                     = useState(sessionStorage.getItem('to_auth') === '1')
-  const [page, setPage]                     = useState('overview')
+  const [auth, setAuth]                       = useState(sessionStorage.getItem('to_auth') === '1')
+  const [page, setPage]                       = useState('overview')
   const [selectedAccount, setSelectedAccount] = useState(null)
+  const { accounts, loading, error, lastUpdated, refresh } = useAccounts()
 
   if (!auth) return (
     <>
@@ -34,13 +36,29 @@ export default function App() {
   const current = NAV.find(n => n.key === page)
 
   const pageComponent = {
-    overview:  <Overview  accounts={ACCOUNTS} onSelectAccount={setSelectedAccount} />,
-    groups:    <Groups    accounts={ACCOUNTS} />,
-    creatives: <Creatives accounts={ACCOUNTS} />,
-    budget:    <Budget    accounts={ACCOUNTS} />,
-    extras:    <Extras    accounts={ACCOUNTS} />,
-    funnel:    <Funnel    accounts={ACCOUNTS} />,
+    overview:  <Overview  accounts={accounts} onSelectAccount={setSelectedAccount} />,
+    groups:    <Groups    accounts={accounts} />,
+    creatives: <Creatives accounts={accounts} />,
+    budget:    <Budget    accounts={accounts} />,
+    extras:    <Extras    accounts={accounts} />,
+    funnel:    <Funnel    accounts={accounts} />,
   }[page]
+
+  let mainContent
+  if (loading) {
+    mainContent = <div className="loading-screen">Carregando dados...</div>
+  } else if (error) {
+    mainContent = (
+      <div className="error-screen">
+        <span>Erro ao carregar dados: {error}</span>
+        <button className="btn-refresh" onClick={refresh}>Tentar novamente</button>
+      </div>
+    )
+  } else if (selectedAccount) {
+    mainContent = <AccountDetail account={selectedAccount} onBack={() => setSelectedAccount(null)} />
+  } else {
+    mainContent = <div className="content">{pageComponent}</div>
+  }
 
   return (
     <>
@@ -70,7 +88,7 @@ export default function App() {
 
           <div className="nav-dot-list">
             <div className="sb-section">Contas</div>
-            {ACCOUNTS.map(acc => (
+            {accounts.map(acc => (
               <div key={acc.id} className="nav-dot">
                 <span className="dot" style={{ background: acc.color }} />
                 {acc.name}
@@ -81,6 +99,11 @@ export default function App() {
           <div className="sb-footer">
             <div>Maio 2026 · Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</div>
             <div>Meta + Google Ads</div>
+            {lastUpdated && (
+              <div style={{ marginTop: 4, color: '#4A5060', fontSize: 10 }}>
+                Atualizado {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            )}
           </div>
         </aside>
 
@@ -91,14 +114,16 @@ export default function App() {
               <p>{current.sub}</p>
             </div>
             <div className="topbar-right">
-              <span className="badge badge-ok">{ACCOUNTS.length} contas ativas</span>
+              <button className="btn-refresh" onClick={refresh} disabled={loading}>
+                ↻ Atualizar
+              </button>
+              <span className="badge badge-ok">
+                {loading ? '…' : `${accounts.length} contas ativas`}
+              </span>
               <span className="badge badge-warn">Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</span>
             </div>
           </header>
-          {selectedAccount
-            ? <AccountDetail account={selectedAccount} onBack={() => setSelectedAccount(null)} />
-            : <div className="content">{pageComponent}</div>
-          }
+          {mainContent}
         </div>
 
       </div>

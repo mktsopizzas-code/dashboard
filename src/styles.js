@@ -1211,4 +1211,38 @@ a      { text-decoration: none; color: inherit; }
   vertical-align: middle;
   flex-shrink: 0;
 }
+
+/* ── Loading / Error / Refresh ───────────────────────── */
+.loading-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A5060;
+  font-size: 14px;
+  letter-spacing: .04em;
+}
+.error-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #FF5A5A;
+  font-size: 13px;
+}
+.btn-refresh {
+  font-size: 12px;
+  color: #8A94A6;
+  border: 1px solid #2A3040;
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.btn-refresh:hover {
+  color: #E8EAF0;
+  border-color: #4A5060;
+}
 `
