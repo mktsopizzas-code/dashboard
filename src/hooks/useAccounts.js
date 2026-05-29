@@ -15,7 +15,7 @@ export function useAccounts() {
   const [accounts,    setAccounts]    = useState(isDev ? ACCOUNTS : [])
   const [loading,     setLoading]     = useState(!isDev)
   const [error,       setError]       = useState(null)
-  const [lastUpdated, setLastUpdated] = useState(isDev ? new Date() : null)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   const load = useCallback(async () => {
     if (isDev) return
@@ -30,6 +30,7 @@ export function useAccounts() {
       setLastUpdated(new Date())
     } catch (err) {
       setError(err.message)
+      // mantém dados anteriores — não limpa accounts
     } finally {
       setLoading(false)
     }

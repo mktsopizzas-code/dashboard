@@ -1,4 +1,6 @@
-// Static account metadata — order must match META_ACCOUNT_IDS
+import fetch from 'node-fetch'
+
+// Static account metadata — matched by name via META_ACCOUNT_ORDER
 const ACCOUNTS_CONFIG = [
   { id: 1, name: 'Só Pizzas Ariquemes',   type: 'pizza',  color: '#E85D26', budget: 4000, smallMarket: true  },
   { id: 2, name: 'Só Pizzas Porto Velho', type: 'pizza',  color: '#E67E22', budget: 8200 },
@@ -12,39 +14,9 @@ const GOOGLE_ZERO = {
   revenue: 0, leads: 0, orders: 0, pageViews: 0, addToCart: 0, checkout: 0,
 }
 
-async function fetchMetrics(metaAccountId, token, since, until) {
-  const fields = 'spend,impressions,inline_link_clicks,actions,action_values,landing_page_views'
-  const url    = new URL(`https://graph.facebook.com/v19.0/act_${metaAccountId}/insights`)
-  url.searchParams.set('fields',       fields)
-  url.searchParams.set('time_range',   JSON.stringify({ since, until }))
-  url.searchParams.set('access_token', token)
-
-  const resp = await fetch(url.toString())
-  const json = await resp.json()
-
-  if (json.error) throw new Error(`[${metaAccountId}] ${json.error.message}`)
-
-  const data = json.data?.[0]
-  if (!data) return { spend: 0, impressions: 0, clicks: 0, conversions: 0, revenue: 0, pageViews: 0, addToCart: 0 }
-
-  const findAction = (type) => {
-    const item = (data.actions || []).find(a => a.action_type === type)
-    return item ? parseFloat(item.value) : 0
-  }
-  const findValue = (type) => {
-    const item = (data.action_values || []).find(a => a.action_type === type)
-    return item ? parseFloat(item.value) : 0
-  }
-
-  return {
-    spend:       parseFloat(data.spend || 0),
-    impressions: parseInt(data.impressions || 0, 10),
-    clicks:      parseInt(data.inline_link_clicks || 0, 10),
-    conversions: findAction('purchase') || findAction('offsite_conversion.fb_pixel_purchase'),
-    revenue:     findValue('purchase')  || findValue('offsite_conversion.fb_pixel_purchase'),
-    pageViews:   parseInt(data.landing_page_views || 0, 10) || findAction('landing_page_view'),
-    addToCart:   findAction('add_to_cart'),
-  }
+const EMPTY_META = {
+  spend: 0, impressions: 0, clicks: 0, conversions: 0,
+  revenue: 0, pageViews: 0, addToCart: 0, checkout: 0, leads: 0,
 }
 
 export default async function handler(req, res) {
@@ -54,32 +26,39 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required params: since, until' })
   }
 
-  const token = process.env.META_TOKEN
-  if (!token) {
-    return res.status(500).json({ error: 'META_TOKEN not configured' })
-  }
-
-  let accountIds
+  let accountIds, accountOrder
   try {
-    accountIds = JSON.parse(process.env.META_ACCOUNT_IDS || '[]')
+    accountIds   = JSON.parse(process.env.META_ACCOUNT_IDS   || '[]')
+    accountOrder = JSON.parse(process.env.META_ACCOUNT_ORDER || '[]')
   } catch {
-    return res.status(500).json({ error: 'Invalid META_ACCOUNT_IDS — must be a JSON array' })
+    return res.status(500).json({ error: 'Invalid META_ACCOUNT_IDS or META_ACCOUNT_ORDER' })
   }
 
   if (!accountIds.length) {
     return res.status(500).json({ error: 'META_ACCOUNT_IDS is empty' })
   }
 
+  const proto   = req.headers['x-forwarded-proto'] || 'http'
+  const baseUrl = `${proto}://${req.headers.host}`
+
   try {
     const results = await Promise.all(
-      accountIds.map(id => fetchMetrics(id, token, since, until))
+      accountIds.map(id =>
+        fetch(`${baseUrl}/api/meta?accountId=${id}&since=${since}&until=${until}`)
+          .then(r => r.json())
+      )
     )
 
     const accounts = results.map((meta, i) => {
-      const cfg = ACCOUNTS_CONFIG[i] || { id: i + 1, name: `Conta ${i + 1}`, type: 'pizza', color: '#888888', budget: 0 }
+      const name = accountOrder[i]
+      const cfg  = ACCOUNTS_CONFIG.find(a => a.name === name)
+             || { id: i + 1, name: name || `Conta ${i + 1}`, type: 'pizza', color: '#888888', budget: 0 }
+
+      const m = (meta && !meta.error) ? meta : EMPTY_META
+
       return {
         ...cfg,
-        meta: { ...meta, leads: 0, orders: meta.conversions, checkout: 0 },
+        meta: { ...m, orders: m.conversions },
         google: GOOGLE_ZERO,
       }
     })
