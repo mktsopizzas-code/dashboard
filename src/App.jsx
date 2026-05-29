@@ -45,19 +45,31 @@ export default function App() {
   }[page]
 
   let mainContent
-  if (loading) {
-    mainContent = <div className="loading-screen">Carregando dados...</div>
-  } else if (error) {
+  if (loading && accounts.length === 0) {
     mainContent = (
-      <div className="error-screen">
-        <span>Erro ao carregar dados: {error}</span>
-        <button className="btn-refresh" onClick={refresh}>Tentar novamente</button>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8A94A6' }}>
+        Carregando dados...
       </div>
     )
   } else if (selectedAccount) {
     mainContent = <AccountDetail account={selectedAccount} onBack={() => setSelectedAccount(null)} />
   } else {
-    mainContent = <div className="content">{pageComponent}</div>
+    mainContent = (
+      <div className="content">
+        {error && (
+          <div className="alert-banner">
+            <span>Erro ao carregar dados. </span>
+            <button
+              onClick={refresh}
+              style={{ background: 'none', border: 'none', color: '#FF8C42', cursor: 'pointer', fontSize: 12, textDecoration: 'underline', padding: 0, fontFamily: 'inherit' }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+        {pageComponent}
+      </div>
+    )
   }
 
   return (
@@ -101,7 +113,7 @@ export default function App() {
             <div>Meta + Google Ads</div>
             {lastUpdated && (
               <div style={{ marginTop: 4, color: '#4A5060', fontSize: 10 }}>
-                Atualizado {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                Atualizado: {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </div>
             )}
           </div>
@@ -114,8 +126,11 @@ export default function App() {
               <p>{current.sub}</p>
             </div>
             <div className="topbar-right">
-              <button className="btn-refresh" onClick={refresh} disabled={loading}>
-                ↻ Atualizar
+              <button
+                onClick={refresh}
+                style={{ background: 'none', border: '1px solid #2A2F3A', color: '#6A7284', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: 13 }}
+              >
+                ↻
               </button>
               <span className="badge badge-ok">
                 {loading ? '…' : `${accounts.length} contas ativas`}
