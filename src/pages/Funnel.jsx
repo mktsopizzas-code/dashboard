@@ -1,32 +1,34 @@
 import { useState } from 'react'
-import { funnelStages, funnelRates, funnelBottleneck, funnelColor, funnelRate, fmtN } from '../utils.js'
+import {
+  detailFunnelStages, detailFunnelRates, detailFunnelBottleneck, detailFunnelCosts,
+  detailFunnelRateColor, fmtBRL, fmtN,
+} from '../utils.js'
 
 const TABS = ['Por Conta', 'Comparativo']
 
-const BOTTLENECK_LABEL = {
-  imp_click:  'Imp → Clique',
-  click_lead: 'Clique → Lead',
-  lead_order: 'Lead → Pedido',
-}
+const FUNNEL_LT     = [0,   79,  154, 202]
+const FUNNEL_LB     = [79,  154, 202, 202]
+const FUNNEL_RT     = [560, 481, 406, 358]
+const FUNNEL_RB     = [481, 406, 358, 358]
+const FUNNEL_TOP_OP = [1.00, 0.88, 0.76, 0.64]
+const FUNNEL_BOT_OP = [0.88, 0.76, 0.64, 0.52]
+
+const NECK_LABEL = ['', 'Clique→PV', 'PV→Cart', 'Cart→Compra']
 
 /* ── Aba 1: Por Conta ─────────────────────────────────── */
 function TabByConta({ accounts }) {
   const [accIdx, setAccIdx] = useState(0)
-  const acc    = accounts[accIdx]
-  const stages = funnelStages(acc)
-  const rates  = funnelRates(acc)
-  const neck   = funnelBottleneck(acc)
-  const top    = stages[0].value
+  const acc     = accounts[accIdx]
+  const stages  = detailFunnelStages(acc)
+  const rates   = detailFunnelRates(stages)
+  const neckIdx = detailFunnelBottleneck(stages)
+  const costs   = detailFunnelCosts(acc)
 
-  const rateList = [
-    { key: 'imp_click',  label: 'Imp → Clique', value: rates.impToClick  },
-    { key: 'click_lead', label: 'Clique → Lead', value: rates.clickToLead },
-    { key: 'lead_order', label: 'Lead → Pedido', value: rates.leadToOrder },
-  ]
+  const validRates = rates.filter(r => r !== null)
+  const showNeck   = neckIdx !== -1 && validRates.length >= 2
 
   return (
     <div>
-      {/* Account selector */}
       <div className="funnel-account-select">
         {accounts.map((a, i) => (
           <div
@@ -41,211 +43,156 @@ function TabByConta({ accounts }) {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Funnel visual */}
-        <div className="funnel-card">
-          <div className="funnel-account-name">
-            <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />
-            {acc.name}
-          </div>
+      {stages.map((stage, i) => {
+        const lT     = FUNNEL_LT[i], rT = FUNNEL_RT[i]
+        const lB     = FUNNEL_LB[i], rB = FUNNEL_RB[i]
+        const rate   = rates[i]
+        const cost   = costs[i]
+        const midX   = 280
+        const textLX = Math.round((lT + lB) / 2) + 16
+        const textRX = Math.round((rT + rB) / 2) - 16
+        const gId    = `fg-fn-${acc.id}-${i}`
+        const cId    = `fc-fn-${acc.id}-${i}`
 
-          <div className="funnel-stages">
-            {stages.map((stage, i) => {
-              const widthPct = top > 0 ? Math.max((stage.value / top) * 100, 8) : 8
-              const rateEntry = rateList[i - 1]
-              const isNeck = rateEntry && rateEntry.key === neck
-
-              return (
-                <div key={stage.label} className="funnel-stage">
-                  {i > 0 && (
-                    <div className="funnel-connector">
-                      <span
-                        className="funnel-rate"
-                        style={{ color: funnelColor(rateList[i - 1].value) }}
-                      >
-                        {rateList[i - 1].value.toFixed(1)}%
-                      </span>
-                      <div className="funnel-connector-line" />
-                      {isNeck && (
-                        <span className="badge badge-err" style={{ fontSize: 10, padding: '2px 8px' }}>
-                          Gargalo
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <div
-                      className="funnel-stage-bar"
-                      style={{
-                        width: `${widthPct}%`,
-                        background: acc.color + (i === 0 ? 'CC' : i === 1 ? '99' : i === 2 ? '66' : '44'),
-                        border: isNeck ? `2px solid ${acc.color}` : 'none',
-                      }}
-                    >
-                      <span className="funnel-stage-label">{stage.label}</span>
-                      <span className="funnel-stage-val">{fmtN(stage.value)}</span>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="funnel-bottleneck">
-            <span>⚠</span>
-            <span>Gargalo: <strong>{BOTTLENECK_LABEL[neck]}</strong></span>
-          </div>
-        </div>
-
-        {/* Meta vs Google breakdown */}
-        <div className="funnel-card">
-          <div className="funnel-account-name">Breakdown por Plataforma</div>
-          <div className="funnel-platform-split">
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '100px 1fr 1fr',
-                gap: '6px 10px',
-                fontSize: 11,
-                marginBottom: 8,
-              }}
-            >
-              <span style={{ color: '#4A5060', fontSize: 9, textTransform: 'uppercase', letterSpacing: '.06em' }}>Etapa</span>
-              <span style={{ color: '#6A8ECC', fontSize: 9, textTransform: 'uppercase', letterSpacing: '.06em' }}>Meta</span>
-              <span style={{ color: '#4ECB8D', fontSize: 9, textTransform: 'uppercase', letterSpacing: '.06em' }}>Google</span>
+        return (
+          <div key={stage.label} className="detail-funnel-v-row">
+            <div className="detail-funnel-v-left">
+              {!stage.pending && cost != null ? fmtBRL(cost) : ''}
             </div>
-            {stages.map(stage => (
-              <div
-                key={stage.label}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '100px 1fr 1fr',
-                  gap: '6px 10px',
-                  padding: '8px 0',
-                  borderBottom: '1px solid #1E2228',
-                  alignItems: 'center',
-                }}
-              >
-                <span className="funnel-platform-stage">{stage.label}</span>
-                <span className="funnel-platform-val" style={{ color: '#6A8ECC' }}>
-                  {fmtN(stage.metaValue)}
-                </span>
-                <span className="funnel-platform-val" style={{ color: '#4ECB8D' }}>
-                  {fmtN(stage.googleValue)}
-                </span>
-              </div>
-            ))}
+            <div className="detail-funnel-v-center">
+              <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
+                <defs>
+                  {!stage.pending && (
+                    <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%"   stopColor={acc.color} stopOpacity={FUNNEL_TOP_OP[i]} />
+                      <stop offset="100%" stopColor={acc.color} stopOpacity={FUNNEL_BOT_OP[i]} />
+                    </linearGradient>
+                  )}
+                  <clipPath id={cId}>
+                    <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
+                  </clipPath>
+                </defs>
+                <polygon
+                  points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
+                  fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
+                  stroke={stage.pending ? '#3A4050' : 'none'}
+                  strokeWidth={stage.pending ? 1 : 0}
+                  strokeDasharray={stage.pending ? '6 4' : undefined}
+                />
+                <g clipPath={`url(#${cId})`}>
+                  {stage.pending ? (
+                    <>
+                      <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
+                        fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                        {stage.label}
+                      </text>
+                      <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
+                        fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                        dados em breve
+                      </text>
+                    </>
+                  ) : (
+                    <>
+                      <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
+                        fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
+                        {stage.label}
+                      </text>
+                      <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
+                        fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
+                        {fmtN(stage.value)}
+                      </text>
+                    </>
+                  )}
+                </g>
+              </svg>
+            </div>
+            <div
+              className="detail-funnel-v-right"
+              style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
+            >
+              {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
+            </div>
           </div>
+        )
+      })}
 
-          <div style={{ marginTop: 16 }}>
-            <div className="section-title">Taxas de conversão</div>
-            {rateList.map(r => (
-              <div
-                key={r.key}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 0',
-                  borderBottom: '1px solid #1E2228',
-                  fontSize: 13,
-                }}
-              >
-                <span style={{ color: '#8A94A6' }}>{r.label}</span>
-                <span
-                  className="mono"
-                  style={{ color: funnelColor(r.value), fontWeight: 500 }}
-                >
-                  {r.value.toFixed(1)}%
-                </span>
-              </div>
-            ))}
-          </div>
+      {showNeck && (
+        <div className="detail-funnel-neck">
+          <span>⚠</span>
+          <span>
+            Gargalo em <strong>{stages[neckIdx].label}</strong>
+            {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
+          </span>
         </div>
-      </div>
+      )}
     </div>
   )
 }
 
 /* ── Aba 2: Comparativo ───────────────────────────────── */
 function TabComparativo({ accounts }) {
-  const allRates = accounts.map(acc => ({ acc, rates: funnelRates(acc), neck: funnelBottleneck(acc) }))
+  const rows = accounts.map(acc => {
+    const stages  = detailFunnelStages(acc)
+    const rates   = detailFunnelRates(stages)
+    const neckIdx = detailFunnelBottleneck(stages)
+    return { acc, rates, neckIdx }
+  })
 
-  const bestImpClick  = Math.max(...allRates.map(r => r.rates.impToClick))
-  const bestClickLead = Math.max(...allRates.map(r => r.rates.clickToLead))
-  const bestLeadOrder = Math.max(...allRates.map(r => r.rates.leadToOrder))
+  const validR1 = rows.map(r => r.rates[1]).filter(v => v != null)
+  const validR2 = rows.map(r => r.rates[2]).filter(v => v != null)
+  const validR3 = rows.map(r => r.rates[3]).filter(v => v != null)
+  const bestR1  = validR1.length ? Math.max(...validR1) : null
+  const bestR2  = validR2.length ? Math.max(...validR2) : null
+  const bestR3  = validR3.length ? Math.max(...validR3) : null
+
+  function rateCell(value, best) {
+    if (value == null) return <span className="mono" style={{ color: '#4A5060' }}>—</span>
+    const isBest = best != null && value === best
+    return (
+      <span
+        className="mono"
+        style={{
+          color: detailFunnelRateColor(value),
+          background: isBest ? '#0A1F15' : 'transparent',
+          padding: isBest ? '2px 8px' : '0',
+          borderRadius: isBest ? 4 : 0,
+        }}
+      >
+        {value.toFixed(1)}%
+      </span>
+    )
+  }
 
   return (
     <div>
       <table className="funnel-compare-table">
         <thead>
           <tr>
-            <th style={{ paddingBottom: 10 }}>Conta</th>
-            <th style={{ paddingBottom: 10 }}>Imp → Clique</th>
-            <th style={{ paddingBottom: 10 }}>Clique → Lead</th>
-            <th style={{ paddingBottom: 10 }}>Lead → Pedido</th>
-            <th style={{ paddingBottom: 10 }}>Gargalo</th>
+            <th>Conta</th>
+            <th>Clique→PV %</th>
+            <th>PV→Cart %</th>
+            <th>Cart→Compra %</th>
+            <th>Gargalo</th>
           </tr>
         </thead>
         <tbody>
-          {allRates.map(({ acc, rates, neck }) => {
-            const isBestIC = rates.impToClick  === bestImpClick
-            const isBestCL = rates.clickToLead === bestClickLead
-            const isBestLO = rates.leadToOrder === bestLeadOrder
-
-            return (
-              <tr key={acc.id}>
-                <td>
-                  <span className="dot" style={{ background: acc.color, width: 8, height: 8 }} />
-                  <span style={{ fontSize: 13, color: '#C0C8D8' }}>{acc.name}</span>
-                </td>
-                <td>
-                  <span
-                    className="mono"
-                    style={{
-                      color: funnelColor(rates.impToClick),
-                      background: isBestIC ? '#0A1F15' : 'transparent',
-                      padding: isBestIC ? '2px 8px' : '0',
-                      borderRadius: isBestIC ? 4 : 0,
-                    }}
-                  >
-                    {rates.impToClick.toFixed(1)}%
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className="mono"
-                    style={{
-                      color: funnelColor(rates.clickToLead),
-                      background: isBestCL ? '#0A1F15' : 'transparent',
-                      padding: isBestCL ? '2px 8px' : '0',
-                      borderRadius: isBestCL ? 4 : 0,
-                    }}
-                  >
-                    {rates.clickToLead.toFixed(1)}%
-                  </span>
-                </td>
-                <td>
-                  <span
-                    className="mono"
-                    style={{
-                      color: funnelColor(rates.leadToOrder),
-                      background: isBestLO ? '#0A1F15' : 'transparent',
-                      padding: isBestLO ? '2px 8px' : '0',
-                      borderRadius: isBestLO ? 4 : 0,
-                    }}
-                  >
-                    {rates.leadToOrder.toFixed(1)}%
-                  </span>
-                </td>
-                <td>
-                  <span className="badge badge-warn" style={{ fontSize: 10 }}>
-                    {BOTTLENECK_LABEL[neck]}
-                  </span>
-                </td>
-              </tr>
-            )
-          })}
+          {rows.map(({ acc, rates, neckIdx }) => (
+            <tr key={acc.id}>
+              <td>
+                <span className="dot" style={{ background: acc.color, width: 8, height: 8 }} />
+                <span style={{ fontSize: 13, color: '#C0C8D8' }}>{acc.name}</span>
+              </td>
+              <td>{rateCell(rates[1], bestR1)}</td>
+              <td>{rateCell(rates[2], bestR2)}</td>
+              <td>{rateCell(rates[3], bestR3)}</td>
+              <td>
+                {neckIdx !== -1
+                  ? <span className="badge badge-warn" style={{ fontSize: 10 }}>{NECK_LABEL[neckIdx]}</span>
+                  : <span className="mono" style={{ color: '#4A5060' }}>—</span>
+                }
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -270,7 +217,7 @@ export default function Funnel({ accounts }) {
         ))}
       </div>
 
-      {tab === 0 && <TabByConta    accounts={accounts} />}
+      {tab === 0 && <TabByConta     accounts={accounts} />}
       {tab === 1 && <TabComparativo accounts={accounts} />}
     </div>
   )
