@@ -28,21 +28,55 @@ export default async function handler(req, res) {
     const d = json.data?.[0]
     if (!d) return res.status(200).json(null)
 
-    const getAction = (type) =>
-      d.actions?.find(a => a.action_type === type)?.value || 0
-    const getActionValue = (type) =>
-      d.action_values?.find(a => a.action_type === type)?.value || 0
+    const getAction = (type) => {
+      const found = d.actions?.find(a => a.action_type === type)
+      return found ? parseFloat(found.value) : 0
+    }
+
+    const conversions =
+      getAction('purchase') ||
+      getAction('omni_purchase') ||
+      getAction('complete_registration') ||
+      getAction('lead') ||
+      getAction('offsite_conversion.fb_pixel_purchase') ||
+      0
+
+    const revenue = parseFloat(
+      d.action_values?.find(a =>
+        a.action_type === 'purchase' ||
+        a.action_type === 'omni_purchase' ||
+        a.action_type === 'offsite_conversion.fb_pixel_purchase'
+      )?.value || 0
+    )
+
+    const pageViews =
+      parseInt(d.landing_page_views || 0) ||
+      getAction('link_click') ||
+      0
+
+    const addToCart =
+      getAction('add_to_cart') ||
+      getAction('omni_add_to_cart') ||
+      getAction('offsite_conversion.fb_pixel_add_to_cart') ||
+      0
 
     return res.status(200).json({
       spend:       parseFloat(d.spend || 0),
       impressions: parseInt(d.impressions || 0),
       clicks:      parseInt(d.clicks || 0),
-      conversions: parseInt(getAction('purchase')           || getAction('omni_purchase')),
-      revenue:     parseFloat(getActionValue('purchase')    || getActionValue('omni_purchase')),
-      pageViews:   parseInt(d.landing_page_views || 0),
-      addToCart:   parseInt(getAction('add_to_cart')        || getAction('omni_add_to_cart')),
-      checkout:    parseInt(getAction('initiate_checkout')  || getAction('omni_initiated_checkout')),
-      leads:       parseInt(getAction('lead')),
+      conversions,
+      revenue,
+      pageViews,
+      addToCart,
+      checkout: getAction('initiate_checkout') || getAction('omni_initiated_checkout') || 0,
+      leads:    getAction('lead') || 0,
+      _debug: {
+        raw_spend:      d.spend,
+        raw_impressions: d.impressions,
+        raw_clicks:     d.clicks,
+        actions:        d.actions        || [],
+        action_values:  d.action_values  || [],
+      },
     })
   } catch (err) {
     return res.status(500).json({ error: err.message })

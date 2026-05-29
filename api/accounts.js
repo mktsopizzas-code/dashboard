@@ -41,30 +41,36 @@ export default async function handler(req, res) {
   const proto   = req.headers['x-forwarded-proto'] || 'http'
   const baseUrl = `${proto}://${req.headers.host}`
 
-  try {
-    const results = await Promise.all(
-      accountIds.map(id =>
-        fetch(`${baseUrl}/api/meta?accountId=${id}&since=${since}&until=${until}`)
-          .then(r => r.json())
-      )
-    )
+  const results = await Promise.all(
+    accountIds.map(async (id, i) => {
+      try {
+        const r    = await fetch(`${baseUrl}/api/meta?accountId=${id}&since=${since}&until=${until}`)
+        const meta = await r.json()
 
-    const accounts = results.map((meta, i) => {
-      const name = accountOrder[i]
-      const cfg  = ACCOUNTS_CONFIG.find(a => a.name === name)
-             || { id: i + 1, name: name || `Conta ${i + 1}`, type: 'pizza', color: '#888888', budget: 0 }
+        if (!meta || meta.error) {
+          console.error(`[accounts] conta ${i} (${id}) retornou erro:`, meta?.error || 'null')
+          return EMPTY_META
+        }
 
-      const m = (meta && !meta.error) ? meta : EMPTY_META
-
-      return {
-        ...cfg,
-        meta: { ...m, orders: m.conversions },
-        google: GOOGLE_ZERO,
+        return meta
+      } catch (err) {
+        console.error(`[accounts] falha ao buscar conta ${i} (${id}):`, err.message)
+        return EMPTY_META
       }
     })
+  )
 
-    return res.json(accounts)
-  } catch (err) {
-    return res.status(500).json({ error: err.message })
-  }
+  const accounts = results.map((meta, i) => {
+    const name = accountOrder[i]
+    const cfg  = ACCOUNTS_CONFIG.find(a => a.name === name)
+           || { id: i + 1, name: name || `Conta ${i + 1}`, type: 'pizza', color: '#888888', budget: 0 }
+
+    return {
+      ...cfg,
+      meta: { ...meta, orders: meta.conversions },
+      google: GOOGLE_ZERO,
+    }
+  })
+
+  return res.json(accounts)
 }
