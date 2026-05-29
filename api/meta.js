@@ -17,7 +17,6 @@ export default async function handler(req, res) {
   const fields = [
     'spend', 'impressions', 'clicks',
     'actions', 'action_values',
-    'landing_page_views',
   ].join(',')
 
   const url = `https://graph.facebook.com/v19.0/act_${accountId}/insights` +
@@ -65,7 +64,7 @@ export default async function handler(req, res) {
     )
 
     const pageViews =
-      parseInt(d.landing_page_views || 0) ||
+      getAction('landing_page_view') ||
       getAction('link_click') ||
       0
 
