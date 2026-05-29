@@ -84,12 +84,13 @@ export default async function handler(req, res) {
       addToCart,
       checkout: getAction('initiate_checkout') || getAction('omni_initiated_checkout') || 0,
       leads:    getAction('lead') || 0,
-      _debug: {
-        raw_spend:       d.spend,
-        raw_impressions: d.impressions,
-        raw_clicks:      d.clicks,
-        actions:         d.actions       || [],
-        action_values:   d.action_values || [],
+      _raw: {
+        spend:       d.spend,
+        impressions: d.impressions,
+        clicks:      d.clicks,
+        actions:     d.actions,
+        date_start:  d.date_start,
+        date_stop:   d.date_stop,
       },
     })
   } catch (err) {
