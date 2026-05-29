@@ -11,15 +11,17 @@ function groupStats(accounts) {
   const totalConv   = metrics.reduce((s, m) => s + m.conv,   0)
   const totalRev    = metrics.reduce((s, m) => s + m.rev,    0)
 
-  const avgCTR  = metrics.reduce((s, m) => s + m.ctr,  0) / n
-  const avgCPC  = metrics.reduce((s, m) => s + m.cpc,  0) / n
-  const avgCPR  = metrics.reduce((s, m) => s + m.cpr,  0) / n
-  const avgROAS = metrics.reduce((s, m) => s + m.roas, 0) / n
+  const avgCTR  = n > 0 ? metrics.reduce((s, m) => s + m.ctr,  0) / n : 0
+  const avgCPC  = n > 0 ? metrics.reduce((s, m) => s + m.cpc,  0) / n : 0
+  const avgCPR  = n > 0 ? metrics.reduce((s, m) => s + m.cpr,  0) / n : 0
+  const avgROAS = n > 0 ? metrics.reduce((s, m) => s + m.roas, 0) / n : 0
 
   return { metrics, totalSpend, totalImp, totalClicks, totalConv, totalRev, avgCTR, avgCPC, avgCPR, avgROAS }
 }
 
 function GroupBlock({ emoji, title, accounts }) {
+  if (!accounts.length) return null
+
   const { metrics, totalSpend, avgCTR, avgCPC, avgCPR, avgROAS } = groupStats(accounts)
   const inTargetCount = metrics.filter(m => m.cpr <= CPR_TARGET).length
 
@@ -93,7 +95,7 @@ function GroupBlock({ emoji, title, accounts }) {
                 </div>
                 <div className="group-acc-metric">
                   <div className="group-acc-metric-label">CPR</div>
-                  <div className="group-acc-metric-val" style={{ color: cprColor(m.cpr) }}>
+                  <div className="group-acc-metric-val" style={{ color: cprStatus(m.cpr).color }}>
                     {fmtBRL(m.cpr)}
                   </div>
                 </div>
