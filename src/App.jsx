@@ -116,7 +116,7 @@ export default function App() {
               <div
                 key={n.key}
                 className={`nav-item${page === n.key ? ' active' : ''}`}
-                onClick={() => setPage(n.key)}
+                onClick={() => { setPage(n.key); setSelectedAccount(null) }}
               >
                 <span className="nav-item-icon">{n.icon}</span>
                 {n.label}
