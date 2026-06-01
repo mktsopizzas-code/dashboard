@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { STYLES } from './styles.js'
 import { CURRENT_DAY, DAYS_IN_MONTH } from './data.js'
 import { useAccounts } from './hooks/useAccounts.js'
+import { PageTransition } from './components/Motion.jsx'
 import Login from './Login.jsx'
 import AccountDetail from './pages/AccountDetail.jsx'
 import Overview from './pages/Overview.jsx'
@@ -201,7 +202,9 @@ export default function App() {
               <span className="badge badge-warn">Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</span>
             </div>
           </header>
-          {mainContent}
+          <PageTransition pageKey={selectedAccount ? `account-${selectedAccount.id}` : page}>
+            {mainContent}
+          </PageTransition>
         </div>
 
       </div>

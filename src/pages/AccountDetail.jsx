@@ -4,6 +4,7 @@ import {
   pacingStatus, platformSplit, detailFunnelRateColor,
   detailFunnelStages, detailFunnelRates, detailFunnelBottleneck, detailFunnelCosts,
 } from '../utils.js'
+import { Stagger, StaggerItem, AnimatedNumber, AnimatedBar, FadeIn } from '../components/Motion.jsx'
 
 const BADGE_CLASS = { 'No ritmo': 'badge-ok', 'Abaixo': 'badge-warn', 'Acima': 'badge-err' }
 
@@ -54,50 +55,52 @@ export default function AccountDetail({ account, onBack }) {
       </div>
 
       {/* Seção 2 — KPI Bar */}
-      <div className="kpi-grid-6">
-        <div className="kpi-card">
+      <Stagger className="kpi-grid-6">
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">Investimento</div>
-          <div className="kpi-val" style={{ fontSize: 16 }}>{fmtBRL(m.spend)}</div>
+          <div className="kpi-val" style={{ fontSize: 16 }}>
+            <AnimatedNumber value={m.spend} prefix="R$ " />
+          </div>
           <div className="kpi-trend">de {fmtBRL(account.budget)}</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">Conversões</div>
           <div className="kpi-val" style={{ fontSize: 16 }}>{fmtN(m.conv)}</div>
           <div className="kpi-trend">pedidos</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">CPR</div>
           <div className="kpi-val" style={{ fontSize: 16, color: cprSt.color }}>
-            {fmtBRL(m.cpr)}
+            <AnimatedNumber value={m.cpr} prefix="R$ " />
           </div>
           <div className="cpr-progress-track">
-            <div className="cpr-progress-fill" style={{ width: `${barPct}%`, background: cprSt.color }} />
+            <AnimatedBar width={barPct} color={cprSt.color} />
           </div>
           <div className="kpi-trend" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
             <span style={{ color: cprSt.color }}>{cprSt.icon} {cprSt.label}</span>
             <span>Meta: {fmtBRL(CPR_TARGET)}</span>
           </div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">ROAS</div>
           <div className="kpi-val" style={{ fontSize: 16, color: roasColor(m.roas) }}>
-            {m.roas.toFixed(2)}x
+            <AnimatedNumber value={m.roas} suffix="x" />
           </div>
           <div className="kpi-trend">{fmtBRL(m.rev)} receita</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">CTR</div>
           <div className="kpi-val" style={{ fontSize: 16, color: ctrColor(m.ctr) }}>
-            {m.ctr.toFixed(2)}%
+            <AnimatedNumber value={m.ctr} suffix="%" />
           </div>
           <div className="kpi-trend">{fmtN(m.clicks)} cliques</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">Impressões</div>
           <div className="kpi-val" style={{ fontSize: 16 }}>{fmtN(m.imp)}</div>
           <div className="kpi-trend">alcance total</div>
-        </div>
-      </div>
+        </StaggerItem>
+      </Stagger>
 
       {/* Seção 3 — Funil visual */}
       <div className="detail-section">
@@ -114,92 +117,98 @@ export default function AccountDetail({ account, onBack }) {
           const gId   = `fg-${account.id}-${i}`
           const cId   = `fc-${account.id}-${i}`
           return (
-            <div key={stage.label} className="detail-funnel-v-row">
-              <div className="detail-funnel-v-left">
-                {!stage.pending && cost != null ? fmtBRL(cost) : ''}
+            <FadeIn key={`${account.id}-${stage.label}`} delay={0.1 * (i + 1)}>
+              <div className="detail-funnel-v-row">
+                <div className="detail-funnel-v-left">
+                  {!stage.pending && cost != null ? fmtBRL(cost) : ''}
+                </div>
+                <div className="detail-funnel-v-center">
+                  <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
+                    <defs>
+                      {!stage.pending && (
+                        <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%"   stopColor={account.color} stopOpacity={FUNNEL_TOP_OP[i]} />
+                          <stop offset="100%" stopColor={account.color} stopOpacity={FUNNEL_BOT_OP[i]} />
+                        </linearGradient>
+                      )}
+                      <clipPath id={cId}>
+                        <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
+                      </clipPath>
+                    </defs>
+                    <polygon
+                      points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
+                      fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
+                      stroke={stage.pending ? '#3A4050' : 'none'}
+                      strokeWidth={stage.pending ? 1 : 0}
+                      strokeDasharray={stage.pending ? '6 4' : undefined}
+                    />
+                    <g clipPath={`url(#${cId})`}>
+                      {stage.pending ? (
+                        <>
+                          <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
+                            fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                            {stage.label}
+                          </text>
+                          <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
+                            fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                            dados em breve
+                          </text>
+                        </>
+                      ) : (
+                        <>
+                          <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
+                            fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
+                            {stage.label}
+                          </text>
+                          <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
+                            fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
+                            {fmtN(stage.value)}
+                          </text>
+                        </>
+                      )}
+                    </g>
+                  </svg>
+                </div>
+                <div
+                  className="detail-funnel-v-right"
+                  style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
+                >
+                  {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
+                </div>
               </div>
-              <div className="detail-funnel-v-center">
-                <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
-                  <defs>
-                    {!stage.pending && (
-                      <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%"   stopColor={account.color} stopOpacity={FUNNEL_TOP_OP[i]} />
-                        <stop offset="100%" stopColor={account.color} stopOpacity={FUNNEL_BOT_OP[i]} />
-                      </linearGradient>
-                    )}
-                    <clipPath id={cId}>
-                      <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
-                    </clipPath>
-                  </defs>
-                  <polygon
-                    points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
-                    fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
-                    stroke={stage.pending ? '#3A4050' : 'none'}
-                    strokeWidth={stage.pending ? 1 : 0}
-                    strokeDasharray={stage.pending ? '6 4' : undefined}
-                  />
-                  <g clipPath={`url(#${cId})`}>
-                    {stage.pending ? (
-                      <>
-                        <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
-                          fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
-                          {stage.label}
-                        </text>
-                        <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
-                          fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
-                          dados em breve
-                        </text>
-                      </>
-                    ) : (
-                      <>
-                        <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
-                          fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
-                          {stage.label}
-                        </text>
-                        <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
-                          fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
-                          {fmtN(stage.value)}
-                        </text>
-                      </>
-                    )}
-                  </g>
-                </svg>
-              </div>
-              <div
-                className="detail-funnel-v-right"
-                style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
-              >
-                {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
-              </div>
-            </div>
+            </FadeIn>
           )
         })}
 
         {showNeck && (
-          <div className="detail-funnel-neck">
-            <span>⚠</span>
-            <span>
-              Gargalo em <strong>{stages[neckIdx].label}</strong>
-              {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
-            </span>
-          </div>
+          <FadeIn delay={0.5}>
+            <div className="detail-funnel-neck">
+              <span>⚠</span>
+              <span>
+                Gargalo em <strong>{stages[neckIdx].label}</strong>
+                {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
+              </span>
+            </div>
+          </FadeIn>
         )}
 
-        <div className="cpr-target-card">
-          <div>
-            <div className="cpr-target-card-main">
-              CPR Atual: {fmtBRL(m.cpr)} → Meta: {fmtBRL(CPR_TARGET)}
+        <FadeIn delay={0.6}>
+          <div className="cpr-target-card">
+            <div>
+              <div className="cpr-target-card-main">
+                CPR Atual: {fmtBRL(m.cpr)} → Meta: {fmtBRL(CPR_TARGET)}
+              </div>
+              <div className="cpr-target-card-sub" style={{ color: m.cpr <= CPR_TARGET ? '#4ECB8D' : '#6A7284' }}>
+                {m.cpr <= CPR_TARGET
+                  ? 'Meta atingida este mês 🎯'
+                  : `Reduzir ${fmtBRL(m.cpr - CPR_TARGET)} por compra`}
+              </div>
             </div>
-            <div className="cpr-target-card-sub" style={{ color: m.cpr <= CPR_TARGET ? '#4ECB8D' : '#6A7284' }}>
-              {m.cpr <= CPR_TARGET
-                ? 'Meta atingida este mês 🎯'
-                : `Reduzir ${fmtBRL(m.cpr - CPR_TARGET)} por compra`}
-            </div>
+            <span className={`badge ${m.cpr <= CPR_TARGET ? 'badge-ok' : 'badge-err'}`}>
+              {cprSt.icon} {cprSt.label}
+            </span>
           </div>
-          <span className={`badge ${m.cpr <= CPR_TARGET ? 'badge-ok' : 'badge-err'}`}>
-            {cprSt.icon} {cprSt.label}
-          </span>
-        </div>
+        </FadeIn>
       </div>
 
       {/* Seção 4 — Tabela de campanhas */}

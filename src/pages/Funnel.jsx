@@ -3,6 +3,7 @@ import {
   detailFunnelStages, detailFunnelRates, detailFunnelBottleneck, detailFunnelCosts,
   detailFunnelRateColor, fmtBRL, fmtN,
 } from '../utils.js'
+import { FadeIn } from '../components/Motion.jsx'
 
 const TABS = ['Por Conta', 'Comparativo']
 
@@ -55,75 +56,79 @@ function TabByConta({ accounts }) {
         const cId    = `fc-fn-${acc.id}-${i}`
 
         return (
-          <div key={stage.label} className="detail-funnel-v-row">
-            <div className="detail-funnel-v-left">
-              {!stage.pending && cost != null ? fmtBRL(cost) : ''}
+          <FadeIn key={`${acc.id}-${stage.label}`} delay={0.1 * (i + 1)}>
+            <div className="detail-funnel-v-row">
+              <div className="detail-funnel-v-left">
+                {!stage.pending && cost != null ? fmtBRL(cost) : ''}
+              </div>
+              <div className="detail-funnel-v-center">
+                <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
+                  <defs>
+                    {!stage.pending && (
+                      <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%"   stopColor={acc.color} stopOpacity={FUNNEL_TOP_OP[i]} />
+                        <stop offset="100%" stopColor={acc.color} stopOpacity={FUNNEL_BOT_OP[i]} />
+                      </linearGradient>
+                    )}
+                    <clipPath id={cId}>
+                      <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
+                    </clipPath>
+                  </defs>
+                  <polygon
+                    points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
+                    fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
+                    stroke={stage.pending ? '#3A4050' : 'none'}
+                    strokeWidth={stage.pending ? 1 : 0}
+                    strokeDasharray={stage.pending ? '6 4' : undefined}
+                  />
+                  <g clipPath={`url(#${cId})`}>
+                    {stage.pending ? (
+                      <>
+                        <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
+                          fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                          {stage.label}
+                        </text>
+                        <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
+                          fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
+                          dados em breve
+                        </text>
+                      </>
+                    ) : (
+                      <>
+                        <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
+                          fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
+                          {stage.label}
+                        </text>
+                        <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
+                          fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
+                          {fmtN(stage.value)}
+                        </text>
+                      </>
+                    )}
+                  </g>
+                </svg>
+              </div>
+              <div
+                className="detail-funnel-v-right"
+                style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
+              >
+                {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
+              </div>
             </div>
-            <div className="detail-funnel-v-center">
-              <svg viewBox="0 0 560 64" width="560" height="64" style={{ display: 'block' }}>
-                <defs>
-                  {!stage.pending && (
-                    <linearGradient id={gId} x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%"   stopColor={acc.color} stopOpacity={FUNNEL_TOP_OP[i]} />
-                      <stop offset="100%" stopColor={acc.color} stopOpacity={FUNNEL_BOT_OP[i]} />
-                    </linearGradient>
-                  )}
-                  <clipPath id={cId}>
-                    <polygon points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`} />
-                  </clipPath>
-                </defs>
-                <polygon
-                  points={`${lT},0 ${rT},0 ${rB},64 ${lB},64`}
-                  fill={stage.pending ? '#1A1F28' : `url(#${gId})`}
-                  stroke={stage.pending ? '#3A4050' : 'none'}
-                  strokeWidth={stage.pending ? 1 : 0}
-                  strokeDasharray={stage.pending ? '6 4' : undefined}
-                />
-                <g clipPath={`url(#${cId})`}>
-                  {stage.pending ? (
-                    <>
-                      <text x={midX} y={24} fontSize="13" fontFamily="DM Sans, sans-serif"
-                        fontWeight="600" fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
-                        {stage.label}
-                      </text>
-                      <text x={midX} y={44} fontSize="11" fontFamily="DM Sans, sans-serif"
-                        fill="#4A5060" textAnchor="middle" dominantBaseline="middle">
-                        dados em breve
-                      </text>
-                    </>
-                  ) : (
-                    <>
-                      <text x={textLX} y={32} fontSize="13" fontFamily="DM Sans, sans-serif"
-                        fontWeight="700" fill="#E8EAF0" dominantBaseline="middle">
-                        {stage.label}
-                      </text>
-                      <text x={textRX} y={32} fontSize="14" fontFamily="Space Mono, monospace"
-                        fill="#E8EAF0" textAnchor="end" dominantBaseline="middle">
-                        {fmtN(stage.value)}
-                      </text>
-                    </>
-                  )}
-                </g>
-              </svg>
-            </div>
-            <div
-              className="detail-funnel-v-right"
-              style={{ color: i > 0 && rate != null ? detailFunnelRateColor(rate) : 'transparent' }}
-            >
-              {i > 0 && rate != null ? rate.toFixed(1) + '%' : ''}
-            </div>
-          </div>
+          </FadeIn>
         )
       })}
 
       {showNeck && (
-        <div className="detail-funnel-neck">
-          <span>⚠</span>
-          <span>
-            Gargalo em <strong>{stages[neckIdx].label}</strong>
-            {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
-          </span>
-        </div>
+        <FadeIn delay={0.5}>
+          <div className="detail-funnel-neck">
+            <span>⚠</span>
+            <span>
+              Gargalo em <strong>{stages[neckIdx].label}</strong>
+              {rates[neckIdx] != null && `: ${rates[neckIdx].toFixed(1)}% de conversão`}
+            </span>
+          </div>
+        </FadeIn>
       )}
     </div>
   )
@@ -164,38 +169,40 @@ function TabComparativo({ accounts }) {
   }
 
   return (
-    <div>
-      <table className="funnel-compare-table">
-        <thead>
-          <tr>
-            <th>Conta</th>
-            <th>Clique→PV %</th>
-            <th>PV→Cart %</th>
-            <th>Cart→Compra %</th>
-            <th>Gargalo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(({ acc, rates, neckIdx }) => (
-            <tr key={acc.id}>
-              <td>
-                <span className="dot" style={{ background: acc.color, width: 8, height: 8 }} />
-                <span style={{ fontSize: 13, color: '#C0C8D8' }}>{acc.name}</span>
-              </td>
-              <td>{rateCell(rates[1], bestR1)}</td>
-              <td>{rateCell(rates[2], bestR2)}</td>
-              <td>{rateCell(rates[3], bestR3)}</td>
-              <td>
-                {neckIdx !== -1
-                  ? <span className="badge badge-warn" style={{ fontSize: 10 }}>{NECK_LABEL[neckIdx]}</span>
-                  : <span className="mono" style={{ color: '#4A5060' }}>—</span>
-                }
-              </td>
+    <FadeIn>
+      <div>
+        <table className="funnel-compare-table">
+          <thead>
+            <tr>
+              <th>Conta</th>
+              <th>Clique→PV %</th>
+              <th>PV→Cart %</th>
+              <th>Cart→Compra %</th>
+              <th>Gargalo</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map(({ acc, rates, neckIdx }) => (
+              <tr key={acc.id}>
+                <td>
+                  <span className="dot" style={{ background: acc.color, width: 8, height: 8 }} />
+                  <span style={{ fontSize: 13, color: '#C0C8D8' }}>{acc.name}</span>
+                </td>
+                <td>{rateCell(rates[1], bestR1)}</td>
+                <td>{rateCell(rates[2], bestR2)}</td>
+                <td>{rateCell(rates[3], bestR3)}</td>
+                <td>
+                  {neckIdx !== -1
+                    ? <span className="badge badge-warn" style={{ fontSize: 10 }}>{NECK_LABEL[neckIdx]}</span>
+                    : <span className="mono" style={{ color: '#4A5060' }}>—</span>
+                  }
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </FadeIn>
   )
 }
 

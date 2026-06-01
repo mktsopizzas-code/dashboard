@@ -1,5 +1,6 @@
 import { calc, fmtBRL, fmtN, ctrColor, roasColor, cprStatus } from '../utils.js'
 import { CPR_TARGET } from '../data.js'
+import { Stagger, StaggerItem, AnimatedNumber, AnimatedBar, FadeIn, HoverCard } from '../components/Motion.jsx'
 
 export default function Overview({ accounts, onSelectAccount }) {
   const metrics = accounts.map(calc)
@@ -31,52 +32,54 @@ export default function Overview({ accounts, onSelectAccount }) {
   return (
     <div>
       {/* KPI Bar */}
-      <div className="kpi-grid">
-        <div className="kpi-card">
+      <Stagger className="kpi-grid">
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">Gasto Total</div>
-          <div className="kpi-val">{fmtBRL(totalSpend)}</div>
+          <div className="kpi-val"><AnimatedNumber value={totalSpend} prefix="R$ " /></div>
           <div className="kpi-trend">{fmtN(totalImp)} impressões</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">CTR Médio</div>
           <div className="kpi-val" style={{ color: ctrColor(consolidatedCTR) }}>
-            {consolidatedCTR.toFixed(2)}%
+            <AnimatedNumber value={consolidatedCTR} suffix="%" />
           </div>
           <div className="kpi-trend">{fmtN(totalClicks)} cliques</div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">CPR Médio</div>
           <div className="kpi-val" style={{ color: cprStatus(consolidatedCPR).color }}>
-            {fmtBRL(consolidatedCPR)}
+            <AnimatedNumber value={consolidatedCPR} prefix="R$ " />
           </div>
           <div className="kpi-trend" style={{ color: cprStatus(consolidatedCPR).color }}>
             Meta: {fmtBRL(CPR_TARGET)}
           </div>
-        </div>
-        <div className="kpi-card">
+        </StaggerItem>
+        <StaggerItem className="kpi-card">
           <div className="kpi-label">ROAS Médio</div>
           <div className="kpi-val" style={{ color: roasColor(consolidatedROAS) }}>
-            {consolidatedROAS.toFixed(2)}x
+            <AnimatedNumber value={consolidatedROAS} suffix="x" />
           </div>
           <div className="kpi-trend">{fmtBRL(totalRev)} receita</div>
-        </div>
-      </div>
+        </StaggerItem>
+      </Stagger>
 
       {/* Alert Banner */}
       {alertIds.size > 0 && (
-        <div className="alert-banner">
-          <span>⚠</span>
-          <span>
-            Contas com performance fora da média:{' '}
-            <strong>
-              {accounts.filter(a => alertIds.has(a.id)).map(a => a.name).join(', ')}
-            </strong>
-          </span>
-        </div>
+        <FadeIn delay={0.3}>
+          <div className="alert-banner">
+            <span>⚠</span>
+            <span>
+              Contas com performance fora da média:{' '}
+              <strong>
+                {accounts.filter(a => alertIds.has(a.id)).map(a => a.name).join(', ')}
+              </strong>
+            </span>
+          </div>
+        </FadeIn>
       )}
 
       {/* Accounts Grid */}
-      <div className="accounts-grid">
+      <Stagger className="accounts-grid">
         {accounts.map((acc, i) => {
           const m = metrics[i]
           const isAlert = alertIds.has(acc.id)
@@ -85,66 +88,71 @@ export default function Overview({ accounts, onSelectAccount }) {
           const googlePct = totalAccSpend > 0 ? (acc.google.spend / totalAccSpend) * 100 : 0
 
           return (
-            <div
-              key={acc.id}
-              className={`acc-card clickable${isAlert ? ' alert' : ''}`}
-              onClick={() => onSelectAccount(acc)}
-            >
-              <div className="acc-header">
-                <div className="acc-header-left">
-                  <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />
-                  <div>
-                    <div className="acc-name">{acc.name}</div>
-                    <div className="acc-type">{acc.type === 'pizza' ? 'Pizzaria' : 'Hamburgueria'}</div>
+            <StaggerItem key={acc.id}>
+              <HoverCard
+                className={`acc-card clickable${isAlert ? ' alert' : ''}`}
+                onClick={() => onSelectAccount(acc)}
+              >
+                <div className="acc-header">
+                  <div className="acc-header-left">
+                    <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />
+                    <div>
+                      <div className="acc-name">{acc.name}</div>
+                      <div className="acc-type">{acc.type === 'pizza' ? 'Pizzaria' : 'Hamburgueria'}</div>
+                    </div>
                   </div>
+                  {isAlert && <span className="badge badge-err">Alerta</span>}
                 </div>
-                {isAlert && <span className="badge badge-err">Alerta</span>}
-              </div>
 
-              <div className="acc-metrics">
-                <div className="acc-metric">
-                  <div className="acc-metric-label">CTR</div>
-                  <div className="acc-metric-val" style={{ color: ctrColor(m.ctr) }}>
-                    {m.ctr.toFixed(2)}%
+                <div className="acc-metrics">
+                  <div className="acc-metric">
+                    <div className="acc-metric-label">CTR</div>
+                    <div className="acc-metric-val" style={{ color: ctrColor(m.ctr) }}>
+                      {m.ctr.toFixed(2)}%
+                    </div>
+                  </div>
+                  <div className="acc-metric">
+                    <div className="acc-metric-label">CPC</div>
+                    <div className="acc-metric-val">{fmtBRL(m.cpc)}</div>
+                  </div>
+                  <div className="acc-metric">
+                    <div className="acc-metric-label">CPR</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span className="acc-metric-val" style={{ color: cprStatus(m.cpr).color }}>
+                        {fmtBRL(m.cpr)}
+                      </span>
+                      {m.cpr <= CPR_TARGET && <span className="badge-meta-ok">✓ Meta</span>}
+                    </div>
+                  </div>
+                  <div className="acc-metric">
+                    <div className="acc-metric-label">ROAS</div>
+                    <div className="acc-metric-val" style={{ color: roasColor(m.roas) }}>
+                      {m.roas.toFixed(2)}x
+                    </div>
                   </div>
                 </div>
-                <div className="acc-metric">
-                  <div className="acc-metric-label">CPC</div>
-                  <div className="acc-metric-val">{fmtBRL(m.cpc)}</div>
-                </div>
-                <div className="acc-metric">
-                  <div className="acc-metric-label">CPR</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span className="acc-metric-val" style={{ color: cprStatus(m.cpr).color }}>
-                      {fmtBRL(m.cpr)}
-                    </span>
-                    {m.cpr <= CPR_TARGET && <span className="badge-meta-ok">✓ Meta</span>}
-                  </div>
-                </div>
-                <div className="acc-metric">
-                  <div className="acc-metric-label">ROAS</div>
-                  <div className="acc-metric-val" style={{ color: roasColor(m.roas) }}>
-                    {m.roas.toFixed(2)}x
-                  </div>
-                </div>
-              </div>
 
-              <div className="acc-platform-split">
-                <div className="plat-row">
-                  <span className="plat-bar-label">Meta</span>
-                  <div className="plat-bar meta" style={{ width: `${metaPct}%`, maxWidth: '100%' }} />
-                  <span className="plat-bar-val">{fmtBRL(acc.meta.spend)}</span>
+                <div className="acc-platform-split">
+                  <div className="plat-row">
+                    <span className="plat-bar-label">Meta</span>
+                    <div style={{ flex: 1, height: 6, background: '#1E2228', borderRadius: 3, overflow: 'hidden' }}>
+                      <AnimatedBar width={metaPct} color="#6A8ECC" />
+                    </div>
+                    <span className="plat-bar-val">{fmtBRL(acc.meta.spend)}</span>
+                  </div>
+                  <div className="plat-row">
+                    <span className="plat-bar-label">Google</span>
+                    <div style={{ flex: 1, height: 6, background: '#1E2228', borderRadius: 3, overflow: 'hidden' }}>
+                      <AnimatedBar width={googlePct} color="#4ECB8D" />
+                    </div>
+                    <span className="plat-bar-val">{fmtBRL(acc.google.spend)}</span>
+                  </div>
                 </div>
-                <div className="plat-row">
-                  <span className="plat-bar-label">Google</span>
-                  <div className="plat-bar google" style={{ width: `${googlePct}%`, maxWidth: '100%' }} />
-                  <span className="plat-bar-val">{fmtBRL(acc.google.spend)}</span>
-                </div>
-              </div>
-            </div>
+              </HoverCard>
+            </StaggerItem>
           )
         })}
-      </div>
+      </Stagger>
     </div>
   )
 }

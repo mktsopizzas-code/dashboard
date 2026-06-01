@@ -1,5 +1,6 @@
 import { calc, fmtBRL, fmtN, ctrColor, roasColor, cprStatus } from '../utils.js'
 import { CPR_TARGET } from '../data.js'
+import { Stagger, StaggerItem } from '../components/Motion.jsx'
 
 function groupStats(accounts) {
   const metrics = accounts.map(calc)
@@ -62,14 +63,14 @@ function GroupBlock({ emoji, title, accounts }) {
       <div className="divider" />
 
       <div className="section-title">Contas individuais</div>
-      <div className="group-accounts">
+      <Stagger className="group-accounts">
         {accounts.map((acc, i) => {
           const m = metrics[i]
           const ctrBetter  = m.ctr  >= avgCTR
           const roasBetter = m.roas >= avgROAS
 
           return (
-            <div key={acc.id} className="group-acc-card">
+            <StaggerItem key={acc.id} className="group-acc-card">
               <div className="group-acc-name">
                 <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />
                 {acc.name}
@@ -100,10 +101,10 @@ function GroupBlock({ emoji, title, accounts }) {
                   </div>
                 </div>
               </div>
-            </div>
+            </StaggerItem>
           )
         })}
-      </div>
+      </Stagger>
     </div>
   )
 }
@@ -113,9 +114,13 @@ export default function Groups({ accounts }) {
   const burgers = accounts.filter(a => a.type === 'burger')
 
   return (
-    <div>
-      <GroupBlock emoji="🍕" title="Pizzarias"     accounts={pizzas}  />
-      <GroupBlock emoji="🍔" title="Hamburguerias" accounts={burgers} />
-    </div>
+    <Stagger>
+      <StaggerItem>
+        <GroupBlock emoji="🍕" title="Pizzarias"     accounts={pizzas}  />
+      </StaggerItem>
+      <StaggerItem>
+        <GroupBlock emoji="🍔" title="Hamburguerias" accounts={burgers} />
+      </StaggerItem>
+    </Stagger>
   )
 }
