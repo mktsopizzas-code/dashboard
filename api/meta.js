@@ -22,6 +22,7 @@ export default async function handler(req, res) {
   const url = `https://graph.facebook.com/v19.0/act_${accountId}/insights` +
     `?fields=${fields}` +
     `&time_range={"since":"${since}","until":"${until}"}` +
+    `&filtering=${encodeURIComponent(JSON.stringify([{"field":"campaign.objective","operator":"IN","value":["OUTCOME_SALES","CONVERSIONS","PRODUCT_CATALOG_SALES"]}]))}` +
     `&access_token=${token}`
 
   try {
