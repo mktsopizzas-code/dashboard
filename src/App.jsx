@@ -38,8 +38,9 @@ export default function App() {
   const [until, setUntil] = useState(isoToday)
   const [draftSince, setDraftSince] = useState(isoFirstOfMonth)
   const [draftUntil, setDraftUntil] = useState(isoToday)
+  const [objective, setObjective] = useState('sales')
 
-  const { accounts, loading, error, lastUpdated, refresh } = useAccounts(since, until)
+  const { accounts, loading, error, lastUpdated, refresh } = useAccounts(since, until, objective)
 
   const applyDates = () => {
     setSince(draftSince)
@@ -154,6 +155,20 @@ export default function App() {
             </div>
             <div className="topbar-right">
               <div className="date-filter">
+                <div className="objective-toggle">
+                  <button
+                    className={`objective-btn${objective === 'all' ? ' active' : ''}`}
+                    onClick={() => setObjective('all')}
+                  >
+                    Todas
+                  </button>
+                  <button
+                    className={`objective-btn${objective === 'sales' ? ' active' : ''}`}
+                    onClick={() => setObjective('sales')}
+                  >
+                    Vendas
+                  </button>
+                </div>
                 <span className="date-shortcut" onClick={() => setShortcut(isoToday(), isoToday())}>Hoje</span>
                 <span className="date-shortcut" onClick={() => {
                   const t = new Date()

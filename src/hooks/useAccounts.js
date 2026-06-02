@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { ACCOUNTS } from '../data.js'
 
-export function useAccounts(since, until) {
+export function useAccounts(since, until, objective) {
   const isDev = import.meta.env.DEV
 
   const [accounts,    setAccounts]    = useState(isDev ? ACCOUNTS : [])
@@ -14,7 +14,7 @@ export function useAccounts(since, until) {
     setLoading(true)
     setError(null)
     try {
-      const res  = await fetch(`/api/accounts?since=${since}&until=${until}`)
+      const res  = await fetch(`/api/accounts?since=${since}&until=${until}&objective=${objective || 'sales'}`)
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setAccounts(data)
@@ -24,7 +24,7 @@ export function useAccounts(since, until) {
     } finally {
       setLoading(false)
     }
-  }, [isDev, since, until])
+  }, [isDev, since, until, objective])
 
   useEffect(() => { load() }, [load])
 

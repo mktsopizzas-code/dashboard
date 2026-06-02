@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
 
-  const { accountId, since, until } = req.query
+  const { accountId, since, until, objective } = req.query
   const token = process.env.META_TOKEN
 
   console.log('META API CALL:', {
@@ -19,10 +19,14 @@ export default async function handler(req, res) {
     'actions', 'action_values',
   ].join(',')
 
+  const filterParam = objective !== 'all'
+    ? `&filtering=${encodeURIComponent(JSON.stringify([{"field":"campaign.objective","operator":"IN","value":["OUTCOME_SALES","CONVERSIONS","PRODUCT_CATALOG_SALES"]}]))}`
+    : ''
+
   const url = `https://graph.facebook.com/v19.0/act_${accountId}/insights` +
     `?fields=${fields}` +
     `&time_range={"since":"${since}","until":"${until}"}` +
-    `&filtering=${encodeURIComponent(JSON.stringify([{"field":"campaign.objective","operator":"IN","value":["OUTCOME_SALES","CONVERSIONS","PRODUCT_CATALOG_SALES"]}]))}` +
+    filterParam +
     `&access_token=${token}`
 
   try {

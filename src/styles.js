@@ -1276,4 +1276,31 @@ a      { text-decoration: none; color: inherit; }
 .date-shortcut:hover {
   color: #E8EAF0;
 }
+
+/* ── Objective Toggle ─────────────────────────────────── */
+.objective-toggle {
+  display: inline-flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #1E2228;
+}
+.objective-btn {
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: #14171C;
+  color: #4A5060;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.objective-btn.active {
+  background: #FF5A1F;
+  color: #FFFFFF;
+}
+.objective-btn:first-child {
+  border-right: 1px solid #1E2228;
+}
 `

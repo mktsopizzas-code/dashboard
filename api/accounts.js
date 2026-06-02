@@ -20,7 +20,7 @@ const EMPTY_META = {
 }
 
 export default async function handler(req, res) {
-  const { since, until } = req.query
+  const { since, until, objective } = req.query
 
   if (!since || !until) {
     return res.status(400).json({ error: 'Missing required params: since, until' })
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   const results = await Promise.all(
     accountIds.map(async (id, i) => {
       try {
-        const r    = await fetch(`${baseUrl}/api/meta?accountId=${id}&since=${since}&until=${until}`)
+        const r    = await fetch(`${baseUrl}/api/meta?accountId=${id}&since=${since}&until=${until}&objective=${objective || 'sales'}`)
         const meta = await r.json()
 
         if (!meta || meta.error) {
