@@ -1309,10 +1309,10 @@ a      { text-decoration: none; color: inherit; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.7);
-  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 100;
 }
 .modal-card {
   background: #12151A;
@@ -1320,6 +1320,28 @@ a      { text-decoration: none; color: inherit; }
   border-radius: 14px;
   padding: 28px;
   width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #E8EAF0;
+  margin-bottom: 8px;
+}
+.modal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #1E2228;
+}
+.modal-account-name {
+  font-size: 13px;
+  color: #C0C8D8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .budget-input {
   background: #0A0C0F;
@@ -1332,31 +1354,30 @@ a      { text-decoration: none; color: inherit; }
   width: 140px;
   text-align: right;
   outline: none;
-  transition: border-color .15s;
 }
 .budget-input:focus {
   border-color: #FF5A1F;
 }
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
 .modal-btn {
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
-  border: none;
   font-family: 'DM Sans', sans-serif;
-  transition: opacity .15s;
-}
-.modal-btn:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
-.modal-btn-save {
-  background: #FF5A1F;
-  color: #FFFFFF;
+  border: none;
 }
 .modal-btn-cancel {
   background: #1A1F28;
   color: #6A7284;
+}
+.modal-btn-save {
+  background: #FF5A1F;
+  color: white;
 }
 `

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { calc, fmtBRL, pacingStatus } from '../utils.js'
 import { useBudgets } from '../hooks/useBudgets.js'
-import { Stagger, StaggerItem, AnimatedBar, FadeIn } from '../components/Motion.jsx'
+import { Stagger, StaggerItem, AnimatedBar } from '../components/Motion.jsx'
 
 const BADGE_CLASS = { 'No ritmo': 'badge-ok', 'Abaixo': 'badge-warn', 'Acima': 'badge-err' }
 
@@ -20,34 +20,38 @@ function calcPeriod(since, until) {
 
 export default function Budget({ accounts, since, until }) {
   const { budgets, saveBudget } = useBudgets(since, until)
-  const [showModal, setShowModal] = useState(false)
-  const [inputs,    setInputs]    = useState({})
-  const [saving,    setSaving]    = useState(false)
+  const [editing,    setEditing]    = useState(false)
+  const [formValues, setFormValues] = useState({})
 
-  const allMetrics               = accounts.map(calc)
+  const allMetrics = accounts.map(calc)
   const { totalDays, daysElapsed, expectedPct } = calcPeriod(since, until)
 
-  const totalBudget = accounts.reduce((s, acc) => s + (budgets.get(String(acc.id)) || 0), 0)
+  const totalBudget = accounts.reduce((s, acc) => s + (budgets.get(acc.name) || 0), 0)
   const totalSpend  = allMetrics.reduce((s, m) => s + m.spend, 0)
   const consumedPct = totalBudget > 0 ? (totalSpend / totalBudget) * 100 : 0
 
-  function openModal() {
-    const init = {}
-    accounts.forEach(acc => { init[acc.id] = budgets.get(String(acc.id)) ?? 0 })
-    setInputs(init)
-    setShowModal(true)
-  }
+  useEffect(() => {
+    if (editing) {
+      const initial = {}
+      accounts.forEach(acc => {
+        const saved = budgets.get(acc.name)
+        if (saved) initial[acc.name] = saved
+      })
+      setFormValues(initial)
+    }
+  }, [editing])
 
   async function handleSave() {
-    setSaving(true)
-    try {
-      await Promise.all(
-        accounts.map(acc => saveBudget(String(acc.id), acc.name, inputs[acc.id] ?? 0))
-      )
-      setShowModal(false)
-    } finally {
-      setSaving(false)
-    }
+    const promises = accounts.map(acc => {
+      const value = formValues[acc.name] ?? budgets.get(acc.name) ?? 0
+      if (parseFloat(value) > 0) {
+        return saveBudget(acc.name, acc.name, parseFloat(value))
+      }
+      return null
+    }).filter(Boolean)
+    await Promise.all(promises)
+    setEditing(false)
+    setFormValues({})
   }
 
   return (
@@ -64,11 +68,11 @@ export default function Budget({ accounts, since, until }) {
           </span>
         </div>
         <button
-          onClick={openModal}
+          onClick={() => setEditing(true)}
           style={{
-            background: '#1A1F28', border: '1px solid #2A2F3A', color: '#C0C8D8',
-            padding: '7px 16px', borderRadius: 8, fontSize: 13, cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif',
+            background: '#FF5A1F', color: 'white', border: 'none',
+            borderRadius: 6, padding: '8px 18px', fontSize: 12,
+            fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
           }}
         >
           Editar Orçamentos
@@ -80,7 +84,9 @@ export default function Budget({ accounts, since, until }) {
         <StaggerItem className="kpi-card">
           <div className="kpi-label">Orçamento Total</div>
           <div className="kpi-val">{fmtBRL(totalBudget)}</div>
-          <div className="kpi-trend">{accounts.length} contas · período selecionado</div>
+          <div className="kpi-trend">
+            {totalBudget === 0 ? 'Defina os orçamentos' : `${accounts.length} contas · período selecionado`}
+          </div>
         </StaggerItem>
         <StaggerItem className="kpi-card">
           <div className="kpi-label">Gasto Acumulado</div>
@@ -98,7 +104,7 @@ export default function Budget({ accounts, since, until }) {
       <Stagger className="budget-grid">
         {accounts.map((acc, i) => {
           const m      = allMetrics[i]
-          const budget = budgets.get(String(acc.id))
+          const budget = budgets.get(acc.name)
           const hasBudget = budget != null && budget > 0
 
           const status     = hasBudget ? pacingStatus(m.spend, budget, daysElapsed, totalDays) : null
@@ -126,17 +132,14 @@ export default function Budget({ accounts, since, until }) {
                       <span>{fmtBRL(m.spend)}</span>
                       <span>{fmtBRL(budget)}</span>
                     </div>
-
                     <div className="pacing-track">
                       <AnimatedBar width={fillPct} color={status.color} delay={i * 0.05} />
                       <div className="pacing-marker" style={{ left: `${Math.min(expectedPct, 100)}%` }} />
                     </div>
-
                     <div className="pacing-labels">
                       <span>{status.pct.toFixed(1)}% consumido</span>
                       <span>Projeção: {fmtBRL(projection)}</span>
                     </div>
-
                     <div className="proj-mini-grid">
                       <div className="proj-mini">
                         <div className="proj-mini-label">Gasto diário</div>
@@ -150,7 +153,10 @@ export default function Budget({ accounts, since, until }) {
                   </>
                 ) : (
                   <div style={{ fontSize: 12, color: '#4A5060', marginTop: 8 }}>
-                    Defina o orçamento para ver o pacing
+                    Orçamento não definido
+                    <div style={{ marginTop: 4, fontSize: 11 }}>
+                      Clique em Editar Orçamentos para definir
+                    </div>
                   </div>
                 )}
               </div>
@@ -160,47 +166,42 @@ export default function Budget({ accounts, since, until }) {
       </Stagger>
 
       {/* Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-          <FadeIn>
-            <div className="modal-card">
-              <div style={{ fontSize: 16, fontWeight: 500, color: '#E8EAF0', marginBottom: 4 }}>
-                Editar Orçamentos
-              </div>
-              <div style={{ fontSize: 12, color: '#6A7284', marginBottom: 24 }}>
-                Período: {fmtDate(since)} → {fmtDate(until)}
-              </div>
+      {editing && (
+        <div className="modal-overlay" onClick={() => setEditing(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-title">Definir Orçamentos</div>
+            <div style={{ fontSize: 12, color: '#4A5060', marginBottom: 20 }}>
+              Período: {since} → {until}
+            </div>
 
-              {accounts.map(acc => (
-                <div
-                  key={acc.id}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span className="dot" style={{ background: acc.color, width: 10, height: 10 }} />
-                    <span style={{ fontSize: 13, color: '#C0C8D8' }}>{acc.name}</span>
-                  </div>
+            {accounts.map(acc => (
+              <div className="modal-row" key={acc.id || acc.name}>
+                <div className="modal-account-name">
+                  <span className="dot" style={{ background: acc.color, width: 8, height: 8 }} />
+                  {acc.name}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: '#4A5060', fontSize: 12 }}>R$</span>
                   <input
-                    type="number"
                     className="budget-input"
-                    value={inputs[acc.id] ?? 0}
-                    onChange={e => setInputs(prev => ({ ...prev, [acc.id]: e.target.value }))}
-                    min="0"
-                    step="100"
+                    type="number"
+                    value={formValues[acc.name] ?? budgets.get(acc.name) ?? ''}
+                    onChange={e => setFormValues(prev => ({ ...prev, [acc.name]: e.target.value }))}
+                    placeholder="0.00"
                   />
                 </div>
-              ))}
-
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8, borderTop: '1px solid #1E2228', paddingTop: 16 }}>
-                <button className="modal-btn modal-btn-cancel" onClick={() => setShowModal(false)} disabled={saving}>
-                  Cancelar
-                </button>
-                <button className="modal-btn modal-btn-save" onClick={handleSave} disabled={saving}>
-                  {saving ? 'Salvando...' : 'Salvar'}
-                </button>
               </div>
+            ))}
+
+            <div className="modal-actions">
+              <button className="modal-btn modal-btn-cancel" onClick={() => setEditing(false)}>
+                Cancelar
+              </button>
+              <button className="modal-btn modal-btn-save" onClick={handleSave}>
+                Salvar
+              </button>
             </div>
-          </FadeIn>
+          </div>
         </div>
       )}
     </div>
