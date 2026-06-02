@@ -1303,4 +1303,60 @@ a      { text-decoration: none; color: inherit; }
 .objective-btn:first-child {
   border-right: 1px solid #1E2228;
 }
+
+/* ── Budget Modal ─────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-card {
+  background: #12151A;
+  border: 1px solid #1E2228;
+  border-radius: 14px;
+  padding: 28px;
+  width: 520px;
+}
+.budget-input {
+  background: #0A0C0F;
+  border: 1px solid #2A2F3A;
+  color: #E8EAF0;
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: 140px;
+  text-align: right;
+  outline: none;
+  transition: border-color .15s;
+}
+.budget-input:focus {
+  border-color: #FF5A1F;
+}
+.modal-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity .15s;
+}
+.modal-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.modal-btn-save {
+  background: #FF5A1F;
+  color: #FFFFFF;
+}
+.modal-btn-cancel {
+  background: #1A1F28;
+  color: #6A7284;
+}
 `

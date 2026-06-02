@@ -67,7 +67,7 @@ export default function App() {
     overview:  <Overview  accounts={accounts} onSelectAccount={setSelectedAccount} />,
     groups:    <Groups    accounts={accounts} />,
     creatives: <Creatives accounts={accounts} />,
-    budget:    <Budget    accounts={accounts} />,
+    budget:    <Budget    accounts={accounts} since={since} until={until} />,
     extras:    <Extras    accounts={accounts} />,
     funnel:    <Funnel    accounts={accounts} />,
   }[page]
