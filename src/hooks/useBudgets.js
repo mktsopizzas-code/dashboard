@@ -24,7 +24,7 @@ export function useBudgets(since, until) {
 
   useEffect(() => { load() }, [load])
 
-  const saveBudget = useCallback(async (accountId, accountName, value) => {
+  const saveBudget = useCallback(async (accountId, accountName, value, periodStart, periodEnd) => {
     await fetch('/api/budgets', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,8 +32,8 @@ export function useBudgets(since, until) {
         account_id:   accountId,
         account_name: accountName,
         budget:       parseFloat(value) || 0,
-        period_start: since,
-        period_end:   until,
+        period_start: periodStart || since,
+        period_end:   periodEnd   || until,
       }),
     })
     await load()

@@ -18,10 +18,22 @@ function calcPeriod(since, until) {
   return { totalDays, daysElapsed, expectedPct: (daysElapsed / totalDays) * 100 }
 }
 
+function firstOfMonth(iso) {
+  const [y, m] = iso.split('-')
+  return `${y}-${m}-01`
+}
+function lastOfMonth(iso) {
+  const [y, m] = iso.split('-')
+  const last = new Date(parseInt(y), parseInt(m), 0).getDate()
+  return `${y}-${m}-${String(last).padStart(2, '0')}`
+}
+
 export default function Budget({ accounts, since, until }) {
   const { budgets, saveBudget } = useBudgets(since, until)
-  const [editing,    setEditing]    = useState(false)
-  const [formValues, setFormValues] = useState({})
+  const [editing,     setEditing]     = useState(false)
+  const [formValues,  setFormValues]  = useState({})
+  const [periodStart, setPeriodStart] = useState(since)
+  const [periodEnd,   setPeriodEnd]   = useState(until)
 
   const allMetrics = accounts.map(calc)
   const { totalDays, daysElapsed, expectedPct } = calcPeriod(since, until)
@@ -32,6 +44,8 @@ export default function Budget({ accounts, since, until }) {
 
   useEffect(() => {
     if (editing) {
+      setPeriodStart(firstOfMonth(since))
+      setPeriodEnd(lastOfMonth(since))
       const initial = {}
       accounts.forEach(acc => {
         const saved = budgets.get(acc.name)
@@ -45,7 +59,7 @@ export default function Budget({ accounts, since, until }) {
     const promises = accounts.map(acc => {
       const value = formValues[acc.name] ?? budgets.get(acc.name) ?? 0
       if (parseFloat(value) > 0) {
-        return saveBudget(acc.name, acc.name, parseFloat(value))
+        return saveBudget(acc.name, acc.name, parseFloat(value), periodStart, periodEnd)
       }
       return null
     }).filter(Boolean)
@@ -170,8 +184,25 @@ export default function Budget({ accounts, since, until }) {
         <div className="modal-overlay" onClick={() => setEditing(false)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
             <div className="modal-title">Definir Orçamentos</div>
-            <div style={{ fontSize: 12, color: '#4A5060', marginBottom: 20 }}>
-              Período: {since} → {until}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, color: '#4A5060', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>
+                Período do orçamento
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={periodStart}
+                  onChange={e => setPeriodStart(e.target.value)}
+                />
+                <span style={{ color: '#4A5060', fontSize: 12 }}>→</span>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={periodEnd}
+                  onChange={e => setPeriodEnd(e.target.value)}
+                />
+              </div>
             </div>
 
             {accounts.map(acc => (
