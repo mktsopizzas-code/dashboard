@@ -29,14 +29,17 @@ function lastOfMonth(iso) {
 }
 
 export default function Budget({ accounts, since, until }) {
-  const { budgets, saveBudget } = useBudgets(since, until)
+  const { budgets, budgetPeriod, saveBudget } = useBudgets(since, until)
+
+  const activeSince = budgetPeriod?.start || since
+  const activeUntil = budgetPeriod?.end   || until
   const [editing,     setEditing]     = useState(false)
   const [formValues,  setFormValues]  = useState({})
   const [periodStart, setPeriodStart] = useState(since)
   const [periodEnd,   setPeriodEnd]   = useState(until)
 
   const allMetrics = accounts.map(calc)
-  const { totalDays, daysElapsed, expectedPct } = calcPeriod(since, until)
+  const { totalDays, daysElapsed, expectedPct } = calcPeriod(activeSince, activeUntil)
 
   const totalBudget = accounts.reduce((s, acc) => s + (budgets.get(acc.name) || 0), 0)
   const totalSpend  = allMetrics.reduce((s, m) => s + m.spend, 0)
@@ -75,7 +78,7 @@ export default function Budget({ accounts, since, until }) {
         <div style={{ fontSize: 13, color: '#8A94A6' }}>
           Orçamento:{' '}
           <span style={{ color: '#C0C8D8', fontFamily: 'Space Mono, monospace', fontSize: 12 }}>
-            {fmtDate(since)} → {fmtDate(until)}
+            {fmtDate(activeSince)} → {fmtDate(activeUntil)}
           </span>
           <span style={{ marginLeft: 12, color: '#4A5060' }}>
             {totalDays} dias · dia {daysElapsed}
