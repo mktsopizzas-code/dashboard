@@ -19,8 +19,8 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { since, until } = req.query
     let url = `${SUPABASE_URL}/rest/v1/budgets?select=account_id,account_name,budget,period_start,period_end`
-    if (since) url += `&period_start=eq.${since}`
-    if (until) url += `&period_end=eq.${until}`
+    if (since) url += `&period_start=lte.${since}`
+    if (until) url += `&period_end=gte.${until}`
 
     const r    = await fetch(url, { headers: headers() })
     const data = await r.json()
