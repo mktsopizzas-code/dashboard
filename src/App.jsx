@@ -32,7 +32,10 @@ function isoFirstOfMonth() {
 export default function App() {
   const [auth, setAuth]                       = useState(sessionStorage.getItem('to_auth') === '1')
   const [page, setPage]                       = useState('overview')
-  const [selectedAccount, setSelectedAccount] = useState(null)
+  const [selectedAccountId, setSelectedAccountId] = useState(null)
+  const selectedAccount = selectedAccountId
+    ? accounts.find(a => a.id === selectedAccountId || a.name === selectedAccountId) ?? null
+    : null
 
   const [since, setSince] = useState(isoFirstOfMonth)
   const [until, setUntil] = useState(isoToday)
@@ -64,7 +67,7 @@ export default function App() {
   const current = NAV.find(n => n.key === page)
 
   const pageComponent = {
-    overview:  <Overview  accounts={accounts} onSelectAccount={setSelectedAccount} />,
+    overview:  <Overview  accounts={accounts} onSelectAccount={acc => setSelectedAccountId(acc.id ?? acc.name)} />,
     groups:    <Groups    accounts={accounts} />,
     creatives: <Creatives accounts={accounts} />,
     budget:    <Budget    accounts={accounts} since={since} until={until} />,
@@ -80,7 +83,7 @@ export default function App() {
       </div>
     )
   } else if (selectedAccount) {
-    mainContent = <AccountDetail account={selectedAccount} onBack={() => setSelectedAccount(null)} />
+    mainContent = <AccountDetail account={selectedAccount} onBack={() => setSelectedAccountId(null)} />
   } else {
     mainContent = (
       <div className="content">
@@ -118,7 +121,7 @@ export default function App() {
               <div
                 key={n.key}
                 className={`nav-item${page === n.key ? ' active' : ''}`}
-                onClick={() => { setPage(n.key); setSelectedAccount(null) }}
+                onClick={() => { setPage(n.key); setSelectedAccountId(null) }}
               >
                 <span className="nav-item-icon">{n.icon}</span>
                 {n.label}
@@ -217,7 +220,7 @@ export default function App() {
               <span className="badge badge-warn">Dia {CURRENT_DAY}/{DAYS_IN_MONTH}</span>
             </div>
           </header>
-          <PageTransition pageKey={selectedAccount ? `account-${selectedAccount.id}` : page}>
+          <PageTransition pageKey={selectedAccountId ? `account-${selectedAccountId}` : page}>
             {mainContent}
           </PageTransition>
         </div>
