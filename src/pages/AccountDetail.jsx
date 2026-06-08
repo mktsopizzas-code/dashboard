@@ -17,12 +17,12 @@ export default function AccountDetail({ account, onBack }) {
   const neckIdx = detailFunnelBottleneck(stages)
   const costs   = detailFunnelCosts(account)
 
-  const FUNNEL_LT     = [0,   79,  154, 202]
-  const FUNNEL_LB     = [79,  154, 202, 202]
-  const FUNNEL_RT     = [560, 481, 406, 358]
-  const FUNNEL_RB     = [481, 406, 358, 358]
-  const FUNNEL_TOP_OP = [1.00, 0.88, 0.76, 0.64]
-  const FUNNEL_BOT_OP = [0.88, 0.76, 0.64, 0.52]
+  const FUNNEL_LT     = [0,   78,  140, 182, 218]
+  const FUNNEL_LB     = [78,  140, 182, 218, 218]
+  const FUNNEL_RT     = [560, 482, 420, 378, 342]
+  const FUNNEL_RB     = [482, 420, 378, 342, 342]
+  const FUNNEL_TOP_OP = [1.00, 0.85, 0.70, 0.55, 0.40]
+  const FUNNEL_BOT_OP = [0.85, 0.70, 0.55, 0.40, 0.28]
 
   const validRates = rates.filter(r => r !== null)
   const showNeck   = neckIdx !== -1 && validRates.length >= 2

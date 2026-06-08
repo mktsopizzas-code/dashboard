@@ -7,14 +7,14 @@ import { FadeIn } from '../components/Motion.jsx'
 
 const TABS = ['Por Conta', 'Comparativo']
 
-const FUNNEL_LT     = [0,   79,  154, 202]
-const FUNNEL_LB     = [79,  154, 202, 202]
-const FUNNEL_RT     = [560, 481, 406, 358]
-const FUNNEL_RB     = [481, 406, 358, 358]
-const FUNNEL_TOP_OP = [1.00, 0.88, 0.76, 0.64]
-const FUNNEL_BOT_OP = [0.88, 0.76, 0.64, 0.52]
+const FUNNEL_LT     = [0,   78,  140, 182, 218]
+const FUNNEL_LB     = [78,  140, 182, 218, 218]
+const FUNNEL_RT     = [560, 482, 420, 378, 342]
+const FUNNEL_RB     = [482, 420, 378, 342, 342]
+const FUNNEL_TOP_OP = [1.00, 0.85, 0.70, 0.55, 0.40]
+const FUNNEL_BOT_OP = [0.85, 0.70, 0.55, 0.40, 0.28]
 
-const NECK_LABEL = ['', 'Clique→PV', 'PV→Cart', 'Cart→Compra']
+const NECK_LABEL = ['', 'Clique→PV', 'PV→Cart', 'Cart→Checkout', 'Checkout→Compra']
 
 /* ── Aba 1: Por Conta ─────────────────────────────────── */
 function TabByConta({ accounts }) {
@@ -146,9 +146,11 @@ function TabComparativo({ accounts }) {
   const validR1 = rows.map(r => r.rates[1]).filter(v => v != null)
   const validR2 = rows.map(r => r.rates[2]).filter(v => v != null)
   const validR3 = rows.map(r => r.rates[3]).filter(v => v != null)
+  const validR4 = rows.map(r => r.rates[4]).filter(v => v != null)
   const bestR1  = validR1.length ? Math.max(...validR1) : null
   const bestR2  = validR2.length ? Math.max(...validR2) : null
   const bestR3  = validR3.length ? Math.max(...validR3) : null
+  const bestR4  = validR4.length ? Math.max(...validR4) : null
 
   function rateCell(value, best) {
     if (value == null) return <span className="mono" style={{ color: '#4A5060' }}>—</span>
@@ -177,7 +179,8 @@ function TabComparativo({ accounts }) {
               <th>Conta</th>
               <th>Clique→PV %</th>
               <th>PV→Cart %</th>
-              <th>Cart→Compra %</th>
+              <th>Cart→Checkout %</th>
+              <th>Checkout→Compra %</th>
               <th>Gargalo</th>
             </tr>
           </thead>
@@ -191,6 +194,7 @@ function TabComparativo({ accounts }) {
                 <td>{rateCell(rates[1], bestR1)}</td>
                 <td>{rateCell(rates[2], bestR2)}</td>
                 <td>{rateCell(rates[3], bestR3)}</td>
+                <td>{rateCell(rates[4], bestR4)}</td>
                 <td>
                   {neckIdx !== -1
                     ? <span className="badge badge-warn" style={{ fontSize: 10 }}>{NECK_LABEL[neckIdx]}</span>
