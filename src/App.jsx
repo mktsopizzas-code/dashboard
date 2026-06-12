@@ -33,9 +33,6 @@ export default function App() {
   const [auth, setAuth]                       = useState(sessionStorage.getItem('to_auth') === '1')
   const [page, setPage]                       = useState('overview')
   const [selectedAccountId, setSelectedAccountId] = useState(null)
-  const selectedAccount = selectedAccountId
-    ? accounts.find(a => a.id === selectedAccountId || a.name === selectedAccountId) ?? null
-    : null
 
   const [since, setSince] = useState(isoFirstOfMonth)
   const [until, setUntil] = useState(isoToday)
@@ -44,6 +41,10 @@ export default function App() {
   const [objective, setObjective] = useState('sales')
 
   const { accounts, loading, error, lastUpdated, refresh } = useAccounts(since, until, objective)
+
+  const selectedAccount = selectedAccountId
+    ? accounts.find(a => a.id === selectedAccountId || a.name === selectedAccountId) ?? null
+    : null
 
   const applyDates = () => {
     setSince(draftSince)
